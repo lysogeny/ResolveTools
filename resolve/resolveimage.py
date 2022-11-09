@@ -1,0 +1,61 @@
+import pandas as pd
+import numpy as np
+import cv2
+import scipy.sparse as sparse
+
+from ..image.utils import claher
+
+def gene_to_upper(gene):
+    if "~" in gene:
+        s, l = gene.split(" ~ ")
+        return gene_to_upper(s) + " ~ " + gene_to_upper(l)
+    else:
+        if gene == gene.upper():
+            return gene
+        else:
+            if gene == "mCherry":
+                return gene.upper()
+            elif gene == "eGFP":
+                return "GFP"
+            else:
+                return gene.upper()+"_M"
+
+class ResolveImage:
+    def __init__(self, filepath, imagepaths = {}, voxelsize = (0.138,0.138,0.3125,r"$\mu$m"), dosparse=False):
+        self.full_data = pd.read_table(filepath, header=None, names=["x","y","z","GeneR","FP"], usecols=list(range(5)))
+        self.full_data["GeneR"] = [gene_to_upper(g) for g in self.full_data["GeneR"]]
+        
+        genes = np.asarray(np.unique(self.full_data["GeneR"],return_counts=True)).T
+        self.genes = pd.DataFrame(genes,columns=["GeneR","Count"]).sort_values(["Count"],
+                                                                               ascending=False).reset_index(drop=True)
+        self.genes.index = np.asarray(self.genes["GeneR"])
+        self.gene_names = np.asarray(self.genes["GeneR"])
+        
+        self.imagesize = (100000,100000)
+        self.voxelsize = voxelsize
+        
+        self.images = {}
+        for image in imagepaths:
+            self.load_image(imagepaths[image], image)
+            self.imagesize = self.images[image].shape
+        
+        single_gene_df = lambda gene: self.full_data[self.full_data["GeneR"]==gene].copy()
+        filter_sg_df = lambda df: df.drop(columns=["GeneR"]).reset_index(drop=True)
+        self.data = {gene: filter_sg_df(single_gene_df(gene)) for gene in self.gene_names}
+        if dosparse: self.data2d = {gene: self.df_to_sparse_2D(self.data[gene]) for gene in self.data}
+    
+    def __getitem__(self, gene):
+        return self.data2d[gene]
+    
+    def load_image(self, path, key, clip=True):
+        self.images[key] = claher(cv2.imread(path, cv2.IMREAD_ANYDEPTH))
+    
+    def df_to_sparse_2D(self, df):
+        return sparse.lil_matrix(sparse.coo_matrix((np.ones_like(df["x"]), (df["y"],df["x"])), shape=self.imagesize))
+    
+    def add_metadata(self, filepath):
+        genes = pd.read_excel(filepath).fillna("")
+        genes.index = [gene.upper() if sp!="Mouse" else gene.upper()+"_M" for gene, sp in zip(genes["Gene"], genes["Species"])]
+        #genes["GeneMod"] = [gene.upper() if sp!="Mouse" else gene.upper()+"_M" for gene, sp in zip(genes["Gene"], genes["Species"])]
+        #genes.index = np.asarray(genes["GeneMod"])
+        self.genes = pd.merge(self.genes,genes,left_index=True,right_index=True,how="left").sort_values("Count",ascending=False)

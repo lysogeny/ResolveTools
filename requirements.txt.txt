@@ -1,2 +1,5 @@
 tifffile
 scikit-image
+pandas
+numpy
+cv2
