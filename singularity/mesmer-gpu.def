@@ -1,0 +1,19 @@
+bootstrap: docker
+From: vanvalenlab/deepcell-applications:0.4.0-gpu
+%post
+
+######################################################################
+## Prepare the container with git + python + pip
+######################################################################
+
+# make directory to mount the data
+mkdir /data
+
+# install wget, unzip, python3.8 and pip 
+apt update
+apt install -y wget
+apt install -y unzip
+
+wget https://bootstrap.pypa.io/get-pip.py
+python3.8 get-pip.py
+rm get-pip.py
