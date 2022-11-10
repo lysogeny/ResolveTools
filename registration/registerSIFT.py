@@ -7,10 +7,12 @@ def find_homography(target, source, keep_match=0.75, mode="homography", verbose=
     if not method in ["ORB", "SIFT"]: raise ValueError("Unknown mode!")
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Find Descriptors")
+    
     if method == "SIFT":
         descriptor = cv2.SIFT_create()
     else:
         descriptor = cv2.ORB_create(descriptorN)
+        
     source = (source/source.max()*255).astype('uint8')
     kp1, des1 = descriptor.detectAndCompute(source, None)
     target = (target/target.max()*255).astype('uint8')
@@ -19,14 +21,23 @@ def find_homography(target, source, keep_match=0.75, mode="homography", verbose=
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Match descriptors")
     if method == "SIFT":
         matcher = cv2.BFMatcher(cv2.NORM_L1, crossCheck = False)
+        matches = matcher.knnMatch(des1, des2, k = 2)
+        
+        good_matches = []
+        for m,n in matches:
+            if m.distance < keep_match * n.distance:
+                good_matches.append([m])
     else:
         matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck = True)
-    matches = matcher.knnMatch(des1, des2, k = 2)
+        matches = matcher.match(des1, des2)
+        
+        matches.sort(key = lambda x: x.distance)
+        # Take the top 90 % matches forward.
+        good_matches = matches[:int(len(matches)*0.9)]
+        
+        
     
-    good_matches = []
-    for m,n in matches:
-        if m.distance < keep_match * n.distance:
-            good_matches.append([m])
+    
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Found",len(good_matches),"good matches.")
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Find Homography")
