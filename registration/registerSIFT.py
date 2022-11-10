@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from datetime import datetime
 
-def find_homography(target, source, keep_match=0.75, mode="homography", verbose=False, convertto256=True, N=5000, method="SIFT"):
+def find_homography(target, source, keep_match=0.75, mode="homography", verbose=False, convertto256=True, descriptorN=5000, method="SIFT"):
     if not mode in ["homography", "partialaffine", "affine"]: raise ValueError("Unknown mode!")
     if not method in ["ORB", "SIFT"]: raise ValueError("Unknown mode!")
     
@@ -10,14 +10,17 @@ def find_homography(target, source, keep_match=0.75, mode="homography", verbose=
     if method == "SIFT":
         descriptor = cv2.SIFT_create()
     else:
-        descriptor = cv2.ORB_create(N)
+        descriptor = cv2.ORB_create(descriptorN)
     source = (source/source.max()*255).astype('uint8')
     kp1, des1 = descriptor.detectAndCompute(source, None)
     target = (target/target.max()*255).astype('uint8')
     kp2, des2 = descriptor.detectAndCompute(target, None)
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Match descriptors")
-    matcher = cv2.BFMatcher(cv2.NORM_L1, crossCheck = False)
+    if method == "SIFT":
+        matcher = cv2.BFMatcher(cv2.NORM_L1, crossCheck = False)
+    else:
+        matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck = True)
     matches = matcher.knnMatch(des1, des2, k = 2)
     
     good_matches = []
@@ -39,16 +42,12 @@ def find_homography(target, source, keep_match=0.75, mode="homography", verbose=
         return homography_toTarget, homography_fromTarget
     
     elif mode=="partialaffine":
-        homography_toTarget, _  = cv2.estimateAffinePartial2D(ref_matched_kpts,
-            sensed_matched_kpts, method = cv2.RANSAC, ransacReprojThreshold = 5)
-        homography_fromTarget, _  = cv2.estimateAffinePartial2D(sensed_matched_kpts,
-            ref_matched_kpts, method = cv2.RANSAC, ransacReprojThreshold = 5)
+        homography_toTarget, _  = cv2.estimateAffinePartial2D(ref_matched_kpts, sensed_matched_kpts, method = cv2.RANSAC, ransacReprojThreshold = 5)
+        homography_fromTarget, _  = cv2.estimateAffinePartial2D(sensed_matched_kpts, ref_matched_kpts, method = cv2.RANSAC, ransacReprojThreshold = 5)
         return homography_toTarget, homography_fromTarget
     elif mode=="affine":
-        homography_toTarget, _  = cv2.estimateAffine2D(ref_matched_kpts,
-            sensed_matched_kpts, method = cv2.RANSAC, ransacReprojThreshold = 5)
-        homography_fromTarget, _  = cv2.estimateAffine2D(sensed_matched_kpts,
-            ref_matched_kpts, method = cv2.RANSAC, ransacReprojThreshold = 5)
+        homography_toTarget, _  = cv2.estimateAffine2D(ref_matched_kpts, sensed_matched_kpts, method = cv2.RANSAC, ransacReprojThreshold = 5)
+        homography_fromTarget, _  = cv2.estimateAffine2D(sensed_matched_kpts, ref_matched_kpts, method = cv2.RANSAC, ransacReprojThreshold = 5)
         return homography_toTarget, homography_fromTarget
     else:
         assert False
