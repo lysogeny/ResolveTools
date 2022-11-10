@@ -2,14 +2,16 @@ import cv2
 import numpy as np
 from datetime import datetime
 
-def find_homography(target, source, keep_match=0.75, mode="homography", verbose=False):
+def find_homography(target, source, keep_match=0.75, mode="homography", verbose=False, convertto256=True):
     if not mode in ["homography", "partialaffine", "affine"]:
         raise ValueError("Unknown mode!")
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Find Descriptors")
     descriptor = cv2.SIFT_create()
-    kp1, des1 = descriptor.detectAndCompute((source/source.max()*255).astype('uint8'), None)
-    kp2, des2 = descriptor.detectAndCompute((target/target.max()*255).astype('uint8'), None)
+    source = (source/source.max()*255).astype('uint8')
+    kp1, des1 = descriptor.detectAndCompute(source, None)
+    target = (target/target.max()*255).astype('uint8')
+    kp2, des2 = descriptor.detectAndCompute(target, None)
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Match descriptors")
     matcher = cv2.BFMatcher(cv2.NORM_L1, crossCheck = False)
