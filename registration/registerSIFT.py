@@ -1,14 +1,17 @@
 import cv2
 import numpy as np
+from datetime import datetime
 
-def find_homography(target, source, keep_match=0.75, mode="homography"):
+def find_homography(target, source, keep_match=0.75, mode="homography", verbose=False):
     if not mode in ["homography", "partialaffine", "affine"]:
         raise ValueError("Unknown mode!")
     
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Find Descriptors")
     descriptor = cv2.SIFT_create()
     kp1, des1 = descriptor.detectAndCompute((source/source.max()*255).astype('uint8'), None)
     kp2, des2 = descriptor.detectAndCompute((target/target.max()*255).astype('uint8'), None)
     
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Match descriptors")
     matcher = cv2.BFMatcher(cv2.NORM_L1, crossCheck = False)
     matches = matcher.knnMatch(des1, des2, k = 2)
     
@@ -16,8 +19,9 @@ def find_homography(target, source, keep_match=0.75, mode="homography"):
     for m,n in matches:
         if m.distance < keep_match * n.distance:
             good_matches.append([m])
-    print("Found",len(good_matches),"good matches.")
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Found",len(good_matches),"good matches.")
     
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Find Homography")
     ref_matched_kpts = np.float32([kp1[m[0].queryIdx].pt for m in good_matches])
     sensed_matched_kpts = np.float32([kp2[m[0].trainIdx].pt for m in good_matches])
     
