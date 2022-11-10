@@ -2,12 +2,15 @@ import cv2
 import numpy as np
 from datetime import datetime
 
-def find_homography(target, source, keep_match=0.75, mode="homography", verbose=False, convertto256=True):
-    if not mode in ["homography", "partialaffine", "affine"]:
-        raise ValueError("Unknown mode!")
+def find_homography(target, source, keep_match=0.75, mode="homography", verbose=False, convertto256=True, N=5000, method="SIFT"):
+    if not mode in ["homography", "partialaffine", "affine"]: raise ValueError("Unknown mode!")
+    if not method in ["ORB", "SIFT"]: raise ValueError("Unknown mode!")
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Find Descriptors")
-    descriptor = cv2.SIFT_create()
+    if method == "SIFT":
+        descriptor = cv2.SIFT_create()
+    else:
+        descriptor = cv2.ORB_create(N)
     source = (source/source.max()*255).astype('uint8')
     kp1, des1 = descriptor.detectAndCompute(source, None)
     target = (target/target.max()*255).astype('uint8')
