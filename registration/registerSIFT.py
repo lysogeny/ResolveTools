@@ -2,20 +2,7 @@ import cv2
 import numpy as np
 from datetime import datetime
 
-def find_homography(target, source, keep_match=0.75, mode="homography", verbose=False, convertto256=True, method="SIFT"):
-    if not mode in ["homography", "partialaffine", "affine"]: raise ValueError("Unknown mode!")
-    if not method in ["ORB", "SIFT"]: raise ValueError("Unknown mode!")
-    if method == "ORB": raise ValueError("Don't use this, ORB sucks!")
-    
-    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Find Descriptors")
-    
-    descriptor = cv2.SIFT_create()
-        
-    source = (source/source.max()*255).astype('uint8')
-    kp1, des1 = descriptor.detectAndCompute(source, None)
-    target = (target/target.max()*255).astype('uint8')
-    kp2, des2 = descriptor.detectAndCompute(target, None)
-    
+def _find_homography_from_descriptors(target, kp2, des2, source, kp1, des1, keep_match=0.75, mode="homography", verbose=False, convertto256=True, method="SIFT"):
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Match descriptors")
     matcher = cv2.BFMatcher(cv2.NORM_L1, crossCheck = False)
     matches = matcher.knnMatch(des1, des2, k = 2)
@@ -49,6 +36,42 @@ def find_homography(target, source, keep_match=0.75, mode="homography", verbose=
         return homography_toTarget, homography_fromTarget
     else:
         assert False
+
+def find_homography(target, source, keep_match=0.75, mode="homography", verbose=False, convertto256=True, method="SIFT"):
+    if not mode in ["homography", "partialaffine", "affine"]: raise ValueError("Unknown mode!")
+    if not method in ["ORB", "SIFT"]: raise ValueError("Unknown mode!")
+    if method == "ORB": raise ValueError("Don't use this, ORB sucks!")
+    
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Find Descriptors")
+    
+    descriptor = cv2.SIFT_create()
+        
+    source = (source/source.max()*255).astype('uint8')
+    kp1, des1 = descriptor.detectAndCompute(source, None)
+    target = (target/target.max()*255).astype('uint8')
+    kp2, des2 = descriptor.detectAndCompute(target, None)
+    
+    return _find_homography_from_descriptors(target, kp2, des2, source, kp1, des1, keep_match, mode, verbose, convertto256, method)
+
+def find_homographies(target, sources, keep_match=0.75, mode="homography", verbose=False, convertto256=True, method="SIFT"):
+    if not mode in ["homography", "partialaffine", "affine"]: raise ValueError("Unknown mode!")
+    if not method in ["ORB", "SIFT"]: raise ValueError("Unknown mode!")
+    if method == "ORB": raise ValueError("Don't use this, ORB sucks!")
+    
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Find Descriptors")
+    
+    descriptor = cv2.SIFT_create()
+    target = (target/target.max()*255).astype('uint8')
+    kp2, des2 = descriptor.detectAndCompute(target, None)
+    
+    homographies = []
+    for i, source_ in enumerate(sources):
+        if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Apply to source",i,"of",len(sources),".")
+        source = (source_/source_.max()*255).astype('uint8')
+        kp1, des1 = descriptor.detectAndCompute(source, None)
+        homographies.append(_find_homography_from_descriptors(target, kp2, des2, source, kp1, des1, keep_match, mode, verbose, convertto256, method))
+    
+    return homographies
 
 def warp_image(target, source, homography, mode="homography"):
     if not mode in ["homography", "partialaffine", "affine"]:
