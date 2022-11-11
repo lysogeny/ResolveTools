@@ -2,16 +2,14 @@ import cv2
 import numpy as np
 from datetime import datetime
 
-def find_homography(target, source, keep_match=0.75, mode="homography", verbose=False, convertto256=True, descriptorN=5000, method="SIFT"):
+def find_homography(target, source, keep_match=0.75, mode="homography", verbose=False, convertto256=True, method="SIFT"):
     if not mode in ["homography", "partialaffine", "affine"]: raise ValueError("Unknown mode!")
     if not method in ["ORB", "SIFT"]: raise ValueError("Unknown mode!")
+    if method == "ORB": raise ValueError("Don't use this, ORB sucks!")
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Find Descriptors")
     
-    if method == "SIFT":
-        descriptor = cv2.SIFT_create()
-    else:
-        descriptor = cv2.ORB_create(descriptorN)
+    descriptor = cv2.SIFT_create()
         
     source = (source/source.max()*255).astype('uint8')
     kp1, des1 = descriptor.detectAndCompute(source, None)
@@ -19,24 +17,13 @@ def find_homography(target, source, keep_match=0.75, mode="homography", verbose=
     kp2, des2 = descriptor.detectAndCompute(target, None)
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Match descriptors")
-    if method == "SIFT":
-        matcher = cv2.BFMatcher(cv2.NORM_L1, crossCheck = False)
-        matches = matcher.knnMatch(des1, des2, k = 2)
-        
-        good_matches = []
-        for m,n in matches:
-            if m.distance < keep_match * n.distance:
-                good_matches.append([m])
-    else:
-        matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck = True)
-        matches = matcher.match(des1, des2)
-        
-        matches.sort(key = lambda x: x.distance)
-        # Take the top 90 % matches forward.
-        good_matches = matches[:int(len(matches)*0.9)]
-        
-        
+    matcher = cv2.BFMatcher(cv2.NORM_L1, crossCheck = False)
+    matches = matcher.knnMatch(des1, des2, k = 2)
     
+    good_matches = []
+    for m,n in matches:
+        if m.distance < keep_match * n.distance:
+            good_matches.append([m])
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Found",len(good_matches),"good matches.")
     
@@ -94,3 +81,20 @@ def transform_coordinate(homography, x, y, mode="homography"):
         
     else:
         assert False
+
+def scale_homography(homography, scale_target, scale_source, mode="homography"):
+    """ Scale homography to target, if registration was done by downsampling
+        with scale_target and scale_source.
+    """
+    if not mode in ["homography", "partialaffine", "affine"]:
+        raise ValueError("Unknown mode!")
+    
+    if mode=="homography":
+        return np.asarray([scale_target,scale_target,1])[:,None]*homography*np.asarray([1/scale_source,1/scale_source,1])[None,:]
+    
+    elif mode in ["partialaffine", "affine"]:
+        return np.asarray([scale_target,scale_target])[:,None]*homography_fromA1*np.asarray([1/scale_source,1/scale_source,1])[None,:]
+        
+    else:
+        assert False
+    
