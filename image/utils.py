@@ -22,4 +22,4 @@ import numpy as np
 def resize_shrink(img, factor):
     """ Shrink image ba factor along all axes.
     """
-    return cv2.resize(target_max, np.asarray(target_max.shape)[::-1]//factor, interpolation = cv2.INTER_AREA)
+    return cv2.resize(img, np.asarray(img.shape)[::-1]//factor, interpolation = cv2.INTER_AREA)
