@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.ndimage import center_of_mass
 from numba import njit
+from tqdm import tqdm
+from datetime import datetime
 
 ##############################
 ### Mask Helpers
@@ -121,7 +123,7 @@ def _intersection_over_first(masks_true, masks_pred):
 ### 3D Mask Stitching
 ##############################
 
-def stitch3D_initial(masks_, stitch_threshold=0.25):
+def stitch3D_initial(masks_, stitch_threshold=0.25, verbose=False):
     """ Stitch 2D masks into 3D volume with stitch_threshold on IOU
         Start at zero, since it doesn't matter here.
     """
@@ -129,7 +131,8 @@ def stitch3D_initial(masks_, stitch_threshold=0.25):
     mmax = masks[0].max() # max label number of current mask
     empty = 0
     
-    for i in range(len(masks)-1):
+    rpt = tqdm if verbose else lambda x:x
+    for i in rpt(range(len(masks)-1)):
         iou = _intersection_over_union(masks[i+1], masks[i])[1:,1:]
         if not iou.size and empty == 0: # One mask has no labels, and none of the previous ones did
             masks[i+1] = masks[i+1] # Why?? Just for symmetry of the code?
@@ -188,22 +191,48 @@ def _stitch_layer_disconnected(masks, i, intersection_cutoff=0.8):
     masks[i] = replabels[masks[i]]
     return list(disconnected[inters>intersection_cutoff])
 
-def stitch3D_stitch_disconnected(masks_, intersection_cutoff=0.6):
+def stitch3D_stitch_disconnected(masks_, intersection_cutoff=0.6, verbose=False, inplace=False):
     """ Stitch disconnected labels across the whole mask, start in middle.
     """
-    masks = masks_.copy()
+    masks = masks_ if inplace else masks_.copy()
     stitched = []
-    for i in range(masks.shape[0]//2)[::-1]: # Down from the middle
+    rpt = tqdm if verbose else lambda x:x
+    for i in rpt(range(masks.shape[0]//2)[::-1]): # Down from the middle
         stitched += _stitch_layer_disconnected(masks, i, intersection_cutoff)
-    for i in range(masks.shape[0]//2,masks.shape[0]): # Up from middle
+    for i in rpt(range(masks.shape[0]//2,masks.shape[0])): # Up from middle
         stitched += _stitch_layer_disconnected(masks, i, intersection_cutoff)
     return masks, stitched
 
 def stitch3D_drop_small(masks_, vol_cutoff=800):
     """ Drop all labels with volume below vol_cutoff.
         17/(0.14*0.14*1)\approx 850 um³, repeat with real voxel size and stitch to other nuclei!!!!!!!!!
+        Combine this with relabel!
     """
-    masks = masks_.copy()
+    masks = masks_#.copy()
     u, c = np.unique(masks, return_counts=True)
     drop = u[c<vol_cutoff]
     return _remove_labels(masks, drop), list(drop)
+
+def postprocess_raw_mesmer_masks(masks_, stitch_threshold=0.3, intersection_cutoff=0.6, vol_cutoff=850, verbose=True, verbosetqdm=False):
+    """ Postprocess raw mesmer mask.
+    """
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Starting 3D stitching")
+    masks = stitch3D_initial(masks_, stitch_threshold=stitch_threshold, verbose=verbosetqdm)
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"-",np.unique(masks).shape[0],"cells after initial stitching.")
+    
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Stitching disconnected")
+    masks, _ = stitch3D_stitch_disconnected(masks, intersection_cutoff=intersection_cutoff, verbose=verbosetqdm)
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"-",np.unique(masks).shape[0],"cells after stitching disconnected.")
+    
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Dropping Small cells")
+    masks, _ = stitch3D_drop_small(masks, vol_cutoff=vol_cutoff)
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"-",np.unique(masks).shape[0],"cells after dropping unreasonably small cells. IMRPOVE THIS!")
+    
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Relabel cells")
+    masks = _relabel_from_zero(masks)
+    
+    return masks
+
+
+
+
