@@ -24,6 +24,9 @@ def save_tiff(filename, data, compression="zlib"):
     """
     imwrite(filename, data, metadata={"mode": "composite"}, imagej=True, compression=compression)
 
+def save_tiff_from_float(filename, data, compression="zlib"):
+    imwrite(filename, (data*255).astype("H"), metadata={"mode": "composite"}, imagej=True, compression=compression)
+
 ##############################
 ### Modifying images
 ##############################

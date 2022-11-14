@@ -6,3 +6,4 @@ scipy
 cv2
 openpyxl
 readlif
+numba
