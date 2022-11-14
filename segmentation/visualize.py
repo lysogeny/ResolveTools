@@ -9,13 +9,22 @@ from .postprocess import _intersection_over_union
 ### Outline to Grayscale Image
 ##############################
 
-def add_mask_outline_to_grayscale(gray, mask):
-    """ Add red cell outline to grayscale image.
+def add_mask_outline_to_grayscale(gray, mask, rgb=True):
+    """ Add red cell outline to grayscale image if rgb,
+        else white/black outline on gray image.
     """
-    img = np.repeat(claher(gray)[...,None],3,axis=2)
-    outline = segmentation.find_boundaries(mask)
-    img[outline] = np.asarray([1,0,0])
-    return img
+    if grb:
+        img = np.repeat(claher(gray)[...,None],3,axis=2)
+        outline = segmentation.find_boundaries(mask)
+        img[outline] = np.asarray([1,0,0])
+        return img
+    else:
+        img = gray.copy()
+        outline = segmentation.find_boundaries(mask, mode="inner")
+        img[outline] = 0
+        outline = segmentation.find_boundaries(mask, mode="outer")
+        img[outline] = 1
+        return img
 
 def add_mask_outline_confidence_to_grayscale(gray, mask, mask_confident, ioucutoff=0.8):
     """ Add red cell outline to grayscale image,
