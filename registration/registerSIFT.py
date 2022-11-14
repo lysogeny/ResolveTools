@@ -127,6 +127,7 @@ def warp_image(target, source, homography, mode="homography"):
 
 def transform_coordinate(homography, x, y, mode="homography"):
     """ Transform single point with homography.
+        Ignores z, only appropriate if angles are very small!
     """
     if not mode in ["homography", "partialaffine", "affine"]:
         raise ValueError("Unknown mode!")

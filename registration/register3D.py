@@ -5,6 +5,8 @@ from scipy.optimize import curve_fit
 
 ##############################
 ### Resolve Counts
+### 
+### 
 ##############################
 
 def get_tiled_mean_counts(counts, binsize = 1000):
@@ -83,6 +85,14 @@ def fit_plane(xs, ys, vals_, p0=[5e-4, 5e-4, 4]):
     popt, pcov = curve_fit(plane, x, vals, p0=p0)
     return popt, pcov
 
+def point_to_new_plane(x, y, z, target, source):
+    """ Take (x,y,z) in source plane, transform z to target plane.
+        Only appropriate if relative angles are very small!
+    """
+    znew = plane([x,y], *(target-source)) + z
+    return znew
 
-
-
+def counts_to_plane(counts, target, source):
+    """ Transform counts into new plane, shifting z with point_to_new_plane.
+    """
+    counts["z"] = [to_new_plane(x, y, z, dapiplane, countplane) for x, y, z in zip(counts["x"], counts["y"], counts["z"])]
