@@ -5,6 +5,8 @@
 import cv2
 
 def read_single_modality_confocal(file, norm=True):
+    """ Read single modality confocal .tif image.
+    """
     img = np.asarray(cv2.imreadmulti(file, flags=cv2.IMREAD_ANYDEPTH )[1])
     if norm:
         return img/img.max()
@@ -18,7 +20,7 @@ def read_single_modality_confocal(file, norm=True):
 from tifffile import imwrite
 
 def save_tiff(filename, data, compression="zlib"):
-    """ Save image stack as tiff.
+    """ Save image stack as tif.
     """
     imwrite(filename, data, metadata={"mode": "composite"}, imagej=True, compression=compression)
 

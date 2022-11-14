@@ -26,11 +26,14 @@ def gene_to_upper(gene):
             else:
                 return gene.upper()+"_M"
 
+def read_Resolve_count(filepath):
+    return pd.read_table(filepath, header=None, names=["x","y","z","GeneR","FP"], usecols=list(range(5)))
+
 class ResolveImage:
     """ Document me!
     """
     def __init__(self, filepath, imagepaths = {}, voxelsize = (0.138,0.138,0.3125,r"$\mu$m"), dosparse=False):
-        self.full_data = pd.read_table(filepath, header=None, names=["x","y","z","GeneR","FP"], usecols=list(range(5)))
+        self.full_data = read_Resolve_count(filepath)
         self.full_data["GeneR"] = [gene_to_upper(g) for g in self.full_data["GeneR"]]
         
         genes = np.asarray(np.unique(self.full_data["GeneR"],return_counts=True)).T

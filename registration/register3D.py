@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
-
+from datetime import datetime
 from scipy.optimize import curve_fit
+
+from ..resolve.resolveimage import read_Resolve_count
 
 ##############################
 ### Resolve Counts
-### 
-### 
 ##############################
 
 def get_tiled_mean_counts(counts, binsize = 1000):
@@ -77,7 +77,7 @@ def plane(x, a, b, c):
     """
     return x[0]*a + x[1]*b + c
 
-def fit_plane(xs, ys, vals_, p0=[5e-4, 5e-4, 4]):
+def fit_plane(vals_, xs, ys, p0=[5e-4, 5e-4, 4]):
     """ Fit plane to points.
     """
     vals = vals_.flatten()
@@ -96,3 +96,26 @@ def counts_to_plane(counts, target, source):
     """ Transform counts into new plane, shifting z with point_to_new_plane.
     """
     counts["z"] = [point_to_new_plane(x, y, z, target, source) for x, y, z in zip(counts["x"], counts["y"], counts["z"])]
+
+##############################
+### Register Counts
+##############################
+
+def register_3d_counts(countfile, dapifile, outfile, verbose=False, binsize=1000):
+    """ Register Resolve 3D counts to 3D confocal DAPI image.
+    """
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Loading Image")
+    dapi = read_single_modality_confocal(dapifile)
+    
+    countplane = fit_plane(*get_tiled_mean_counts_fromfile(countfile, binsize))[0]
+    dapiplane = fit_plane(*get_tiled_mean_image(dapi, binsize = 1000, mode="mean"))[0]
+    
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Initially",len(counts),"counts")
+    counts = read_Resolve_count(countfile)
+    counts["z"] = counts["z"]*0.3125 # Hardcoded resolution from Resolve
+    counts_to_plane(counts, dapiplane, countplane)
+    counts["z"] = np.round(counts["z"],0).astype(int)
+    counts = counts.loc[np.logical_and(counts["z"]>=0, counts["z"]<dapi.shape[0])]
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"-",len(counts),"counts after 3D registration")
+    
+    counts.to_csv(outfile, index=False, header=False, sep="\t")
