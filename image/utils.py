@@ -1,3 +1,7 @@
+##############################
+### Saving images
+##############################
+
 from tifffile import imwrite
 
 def save_tiff(filename, data, compression="zlib"):
@@ -5,6 +9,9 @@ def save_tiff(filename, data, compression="zlib"):
     """
     imwrite(filename, data, metadata={"mode": "composite"}, imagej=True, compression=compression)
 
+##############################
+### Modifying images
+##############################
 
 from skimage import exposure
 

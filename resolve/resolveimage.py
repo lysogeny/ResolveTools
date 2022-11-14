@@ -5,7 +5,13 @@ import scipy.sparse as sparse
 
 from ..image.utils import claher
 
+##############################
+### Class to load Resolve Data
+##############################
+
 def gene_to_upper(gene):
+    """ Gene to upper case, adds _M for mouse genes.
+    """
     if "~" in gene:
         s, l = gene.split(" ~ ")
         return gene_to_upper(s) + " ~ " + gene_to_upper(l)
@@ -21,6 +27,8 @@ def gene_to_upper(gene):
                 return gene.upper()+"_M"
 
 class ResolveImage:
+    """ Document me!
+    """
     def __init__(self, filepath, imagepaths = {}, voxelsize = (0.138,0.138,0.3125,r"$\mu$m"), dosparse=False):
         self.full_data = pd.read_table(filepath, header=None, names=["x","y","z","GeneR","FP"], usecols=list(range(5)))
         self.full_data["GeneR"] = [gene_to_upper(g) for g in self.full_data["GeneR"]]

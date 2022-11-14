@@ -2,4 +2,7 @@ tifffile
 scikit-image
 pandas
 numpy
+scipy
 cv2
+openpyxl
+readlif

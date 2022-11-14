@@ -2,7 +2,13 @@ import cv2
 import numpy as np
 from datetime import datetime
 
+##############################
+### Find Homography
+##############################
+
 def _find_homography_from_descriptors(target, kp2, des2, source, kp1, des1, keep_match=0.75, mode="homography", verbose=False, convertto256=True, method="SIFT"):
+    """ Find homography, given SIFT descriptors of two images.
+    """
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Match descriptors")
     matcher = cv2.BFMatcher(cv2.NORM_L1, crossCheck = False)
     matches = matcher.knnMatch(des1, des2, k = 2)
@@ -38,6 +44,9 @@ def _find_homography_from_descriptors(target, kp2, des2, source, kp1, des1, keep
         assert False
 
 def find_homography(target, source, keep_match=0.75, mode="homography", verbose=False, convertto256=True, method="SIFT"):
+    """ Find homography for two images, uses SIFT.
+        Can use general homography, affine homography (no position dependent scaling), or partial affine homography (also no shear).
+    """
     if not mode in ["homography", "partialaffine", "affine"]: raise ValueError("Unknown mode!")
     if not method in ["ORB", "SIFT"]: raise ValueError("Unknown mode!")
     if method == "ORB": raise ValueError("Don't use this, ORB sucks!")
@@ -54,6 +63,8 @@ def find_homography(target, source, keep_match=0.75, mode="homography", verbose=
     return _find_homography_from_descriptors(target, kp2, des2, source, kp1, des1, keep_match, mode, verbose, convertto256, method)
 
 def find_homographies(target, sources, keep_match=0.75, mode="homography", verbose=False, convertto256=True, method="SIFT"):
+    """ Same as find_homography, but for multiple sources and reuses target descriptors.
+    """
     if not mode in ["homography", "partialaffine", "affine"]: raise ValueError("Unknown mode!")
     if not method in ["ORB", "SIFT"]: raise ValueError("Unknown mode!")
     if method == "ORB": raise ValueError("Don't use this, ORB sucks!")
@@ -73,7 +84,33 @@ def find_homographies(target, sources, keep_match=0.75, mode="homography", verbo
     
     return homographies
 
+##############################
+### Homography Utils
+##############################
+
+def scale_homography(homography, scale_target, scale_source, mode="homography"):
+    """ Scale homography to target, if registration was done by downsampling
+        with scale_target and scale_source.
+    """
+    if not mode in ["homography", "partialaffine", "affine"]:
+        raise ValueError("Unknown mode!")
+    
+    if mode=="homography":
+        return np.asarray([scale_target,scale_target,1])[:,None]*homography*np.asarray([1/scale_source,1/scale_source,1])[None,:]
+    
+    elif mode in ["partialaffine", "affine"]:
+        return np.asarray([scale_target,scale_target])[:,None]*homography*np.asarray([1/scale_source,1/scale_source,1])[None,:]
+        
+    else:
+        assert False
+
+##############################
+### Apply Homography
+##############################
+
 def warp_image(target, source, homography, mode="homography"):
+    """ Warp image with homography.
+    """
     if not mode in ["homography", "partialaffine", "affine"]:
         raise ValueError("Unknown mode!")
     
@@ -89,6 +126,8 @@ def warp_image(target, source, homography, mode="homography"):
         assert False
 
 def transform_coordinate(homography, x, y, mode="homography"):
+    """ Transform single point with homography.
+    """
     if not mode in ["homography", "partialaffine", "affine"]:
         raise ValueError("Unknown mode!")
     
@@ -105,19 +144,5 @@ def transform_coordinate(homography, x, y, mode="homography"):
     else:
         assert False
 
-def scale_homography(homography, scale_target, scale_source, mode="homography"):
-    """ Scale homography to target, if registration was done by downsampling
-        with scale_target and scale_source.
-    """
-    if not mode in ["homography", "partialaffine", "affine"]:
-        raise ValueError("Unknown mode!")
-    
-    if mode=="homography":
-        return np.asarray([scale_target,scale_target,1])[:,None]*homography*np.asarray([1/scale_source,1/scale_source,1])[None,:]
-    
-    elif mode in ["partialaffine", "affine"]:
-        return np.asarray([scale_target,scale_target])[:,None]*homography_fromA1*np.asarray([1/scale_source,1/scale_source,1])[None,:]
-        
-    else:
-        assert False
+
     
