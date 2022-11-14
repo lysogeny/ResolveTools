@@ -1,4 +1,17 @@
 ##############################
+### Reading images
+##############################
+
+import cv2
+
+def read_single_modality_confocal(file, norm=True):
+    img = np.asarray(cv2.imreadmulti(file, flags=cv2.IMREAD_ANYDEPTH )[1])
+    if norm:
+        return img/img.max()
+    else:
+        return img
+
+##############################
 ### Saving images
 ##############################
 

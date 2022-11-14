@@ -40,7 +40,7 @@ def get_tiled_mean_image(img, binsize = 1000, mode="mean"):
         in tiles of size binsize x binsize.
         Assumes 1um distance of the z stacks.
     """
-    Nx, Ny = dapi.shape[2]//binsize, dapi.shape[1]//binsize
+    Nx, Ny = img.shape[2]//binsize, img.shape[1]//binsize
     means = np.zeros((Ny, Nx))
     xs = np.zeros((Ny, Nx))
     ys = np.zeros((Ny, Nx))
