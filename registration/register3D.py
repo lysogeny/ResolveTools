@@ -95,4 +95,4 @@ def point_to_new_plane(x, y, z, target, source):
 def counts_to_plane(counts, target, source):
     """ Transform counts into new plane, shifting z with point_to_new_plane.
     """
-    counts["z"] = [to_new_plane(x, y, z, dapiplane, countplane) for x, y, z in zip(counts["x"], counts["y"], counts["z"])]
+    counts["z"] = [point_to_new_plane(x, y, z, dapiplane, countplane) for x, y, z in zip(counts["x"], counts["y"], counts["z"])]
