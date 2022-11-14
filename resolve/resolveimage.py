@@ -6,7 +6,7 @@ import scipy.sparse as sparse
 from ..image.utils import claher
 
 ##############################
-### Class to load Resolve Data
+### Helpers
 ##############################
 
 def gene_to_upper(gene):
@@ -27,7 +27,13 @@ def gene_to_upper(gene):
                 return gene.upper()+"_M"
 
 def read_Resolve_count(filepath):
+    """ Read resolve count table.
+    """
     return pd.read_table(filepath, header=None, names=["x","y","z","GeneR","FP"], usecols=list(range(5)))
+
+##############################
+### Class to load Resolve Data
+##############################
 
 class ResolveImage:
     """ Document me!

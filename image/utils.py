@@ -25,6 +25,8 @@ def save_tiff(filename, data, compression="zlib"):
     imwrite(filename, data, metadata={"mode": "composite"}, imagej=True, compression=compression)
 
 def save_tiff_from_float(filename, data, compression="zlib"):
+    """ save_tiff, with additional converion of the image from [0,1] to 8bit.
+    """
     imwrite(filename, (data*255).astype("H"), metadata={"mode": "composite"}, imagej=True, compression=compression)
 
 ##############################
@@ -45,6 +47,9 @@ import cv2
 import numpy as np
 
 def resize_shrink(img, factor):
-    """ Shrink image ba factor along all axes.
+    """ Shrink image by factor along all axes.
     """
     return cv2.resize(img, np.asarray(img.shape)[::-1]//factor, interpolation = cv2.INTER_AREA)
+
+
+

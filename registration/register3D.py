@@ -93,14 +93,14 @@ def point_to_new_plane(x, y, z, target, source):
     znew = plane([x,y], *(target-source)) + z
     return znew
 
+##############################
+### Register Counts
+##############################
+
 def counts_to_plane(counts, target, source):
     """ Transform counts into new plane, shifting z with point_to_new_plane.
     """
     counts["z"] = [point_to_new_plane(x, y, z, target, source) for x, y, z in zip(counts["x"], counts["y"], counts["z"])]
-
-##############################
-### Register Counts
-##############################
 
 def register_3d_counts(countfile, dapifile, outfile, verbose=False, binsize=1000):
     """ Register Resolve 3D counts to 3D confocal DAPI image.
