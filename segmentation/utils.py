@@ -23,8 +23,8 @@ def expand_labels(label_image, distance=1, sampling=None):
 
 def expand_labels_tiled(label_image, tilesize=2000, distance=1, sampling=None):
     """ expand_labels, but for tiles and stitched together to save memory.
-        !! Will break if overlap includes more than one neighboring tile,
-           but I won't fix this since this use case would be stupid. !!
+        Will probably break if overlap includes more than one neighboring tile,
+        but I won't fix this since this use case would be stupid.
     """
     overlap = int(1.5*distance) if sampling is None else int(1.5*distance/min(sampling))
     if overlap>tilesize: raise ValueError("Tilesize is too small for overlap!")
