@@ -3,6 +3,8 @@ import pandas as pd
 import anndata
 import scanpy as sc
 
+from ..resolve.resolveimage import ResolveImage
+
 ##############################
 ### Utils
 ##############################
