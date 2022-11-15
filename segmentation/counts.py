@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import anndata
 import scanpy as sc
+from datetime import datetime
 
 from ..resolve.resolveimage import ResolveImage
 
@@ -16,17 +17,21 @@ def read_loom(file):
 ### Assign counts with Segmentation
 ##############################
 
-def assign_counts_from_segmentation(countsfile, metafile, segmentationfile, segmentationkey, outputfile, roikey):
+def assign_counts_from_segmentation(countsfile, metafile, segmentationfile, segmentationkey, outputfile, roikey, verbose=False):
     """ Assign counts, using a full cell segmentation.
     """
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Loading Resolve Counts")
     rim = ResolveImage(countsfile)
     rim.add_metadata(metafile)
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Loading Cell Segmentation")
     segmentation = np.load(segmentationfile)[segmentationkey]
     
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Assigning Counts to Cells")
     def find_cell(mask, target):
         return mask[target[0],target[1],target[2]]
     rim.full_data["cell"] = [find_cell(segmentation, target) for target in np.asarray(rim.full_data[["z","y","x"]])]
-    print("Started with",len(rim.full_data),"counts, could not assign",(rim.full_data["cell"]==0).sum(),"of those.")
+    
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Started with",len(rim.full_data),"counts, could not assign",(rim.full_data["cell"]==0).sum(),"of those.")
     rim.full_data["cell"] = rim.full_data["cell"].astype(int)
     
     var = rim.genes.copy()
@@ -56,4 +61,5 @@ def assign_counts_from_segmentation(countsfile, metafile, segmentationfile, segm
     adata.obs["MouseGeneShare"] = counts[adata.var.loc[adata.var["Species"]=="Mouse","GeneR"]].sum(axis=1)/counts.sum(axis=1)
     adata.obs["HumanGeneShare"] = counts[adata.var.loc[adata.var["Species"]=="Human","GeneR"]].sum(axis=1)/counts.sum(axis=1)
     
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Saving Result")
     adata.write_loom(outputfile)
