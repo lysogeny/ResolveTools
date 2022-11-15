@@ -40,6 +40,7 @@ def assign_counts_from_segmentation(countsfile, metafile, segmentationfile, segm
     
     adata = anndata.AnnData(counts, dtype=np.float32, obs = obs, var = var )
     
+    adata.obs["TotalGeneCount"] = counts.sum(axis=1)
     adata.obs["MouseGeneCount"] = counts[adata.var.loc[adata.var["Species"]=="Mouse","GeneR"]].sum(axis=1)
     adata.obs["HumanGeneCount"] = counts[adata.var.loc[adata.var["Species"]=="Human","GeneR"]].sum(axis=1)
     adata.obs["MouseGeneShare"] = counts[adata.var.loc[adata.var["Species"]=="Mouse","GeneR"]].sum(axis=1)/counts.sum(axis=1)
