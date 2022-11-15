@@ -1,6 +1,14 @@
 import numpy as np
 import pandas as pd
 import anndata
+import scanpy as sc
+
+##############################
+### Utils
+##############################
+
+def read_loom(file):
+    return sc.read_loom(file, obs_names='obs_names', var_names='var_names')
 
 ##############################
 ### Assign counts with Segmentation
