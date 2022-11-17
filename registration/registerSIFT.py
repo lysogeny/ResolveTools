@@ -88,62 +88,59 @@ def find_homographies(target, sources, keep_match=0.75, mode="homography", verbo
 ### Homography Utils
 ##############################
 
-def scale_homography(homography, scale_target, scale_source, mode="homography"):
+def scale_homography(homography, scale_target, scale_source):
     """ Scale homography to target, if registration was done by downsampling
         with scale_target and scale_source.
     """
-    if not mode in ["homography", "partialaffine", "affine"]:
-        raise ValueError("Unknown mode!")
-    
-    if mode=="homography":
+    if homography.shape[0]==3: # Homography
         return np.asarray([scale_target,scale_target,1])[:,None]*homography*np.asarray([1/scale_source,1/scale_source,1])[None,:]
     
-    elif mode in ["partialaffine", "affine"]:
+    elif homography.shape[0]==2: # Affine Homography
         return np.asarray([scale_target,scale_target])[:,None]*homography*np.asarray([1/scale_source,1/scale_source,1])[None,:]
         
     else:
-        assert False
+        raise ValueError("Invalid homography!")
 
 ##############################
 ### Apply Homography
 ##############################
 
-def warp_image(target, source, homography, mode="homography"):
+def warp_image(target, source, homography):
     """ Warp image with homography.
     """
-    if not mode in ["homography", "partialaffine", "affine"]:
-        raise ValueError("Unknown mode!")
-    
-    if mode=="homography":
+    if homography.shape[0]==3: # Homography
         warped_image = cv2.warpPerspective(source, homography, (target.shape[1], target.shape[0]))
         return warped_image
     
-    elif mode in ["partialaffine", "affine"]:
+    elif homography.shape[0]==2: # Affine Homography
         warped_image = cv2.warpAffine(source, homography, (target.shape[1], target.shape[0]))
         return warped_image
         
     else:
-        assert False
+        raise ValueError("Invalid homography!")
 
-def transform_coordinate(homography, x, y, mode="homography"):
+def transform_coordinate(homography, x, y):
     """ Transform single point with homography.
         Ignores z, only appropriate if angles are very small!
     """
-    if not mode in ["homography", "partialaffine", "affine"]:
-        raise ValueError("Unknown mode!")
-    
     xp = homography[0,0]*x + homography[0,1]*y + homography[0,2]
     yp = homography[1,0]*x + homography[1,1]*y + homography[1,2]
     
-    if mode=="homography":
+    if homography.shape[0]==3: # Homography
         sf = homography[2,0]*x + homography[2,1]*y + homography[2,2]
         return xp/sf, yp/sf
     
-    elif mode in ["partialaffine", "affine"]:
+    elif homography.shape[0]==2: # Affine Homography
         return xp, yp
         
     else:
-        assert False
+        raise ValueError("Invalid homography!")
 
-
-    
+def get_transformed_corners(source, homography):
+    """ After image source was registered to some target with homography,
+        get the points its corners transform to.
+        Sorted and with duplicates such that plotting them yields a rectangle.
+    """
+    corners = np.reshape(np.asarray([[transform_coordinate(homography,i,j) for j in [0,source.shape[0]]] for i in [0,source.shape[1]]]), (4,2))
+    corners = corners[[0,1,3,2,0]]
+    return corners
