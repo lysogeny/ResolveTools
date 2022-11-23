@@ -97,9 +97,17 @@ def scale_homography(homography, scale_target, scale_source):
     
     elif homography.shape[0]==2: # Affine Homography
         return np.asarray([scale_target,scale_target])[:,None]*homography*np.asarray([1/scale_source,1/scale_source,1])[None,:]
-        
+    
     else:
         raise ValueError("Invalid homography!")
+
+def homography_shift_target(homography_, xshift=0, yshift=0):
+    """ Return homography, with origin of the target shifted.
+    """
+    homography = homography_.copy()
+    homography[0,2] += xshift
+    homography[1,2] += yshift
+    return homography
 
 ##############################
 ### Apply Homography
@@ -140,6 +148,7 @@ def get_transformed_corners(source, homography):
     """ After image source was registered to some target with homography,
         get the points its corners transform to.
         Sorted and with duplicates such that plotting them yields a rectangle.
+        x coordinate in [:,0], y in [:,1]
     """
     corners = np.reshape(np.asarray([[transform_coordinate(homography,i,j) for j in [0,source.shape[0]]] for i in [0,source.shape[1]]]), (4,2))
     corners = corners[[0,1,3,2,0]]
