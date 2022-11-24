@@ -1,6 +1,9 @@
 import numpy as np
 from scipy.ndimage import distance_transform_edt
 
+from skimage.measure import regionprops
+import pandas as pd
+
 ##############################
 ### Modify Segmentation
 ##############################
@@ -42,3 +45,42 @@ def expand_labels_tiled(label_image, tilesize=2000, distance=1, sampling=None):
             
             expanded[assignslice] = expand_labels(label_image[inputslice], distance=distance, sampling=sampling)[outputslice]
     return expanded
+
+##############################
+### Cell Utils
+##############################
+
+def region_to_label(mask, region):
+    """ Given mask and RegionProperty from regionprops,
+        return label of region.
+    """
+    return mask[region.slice][region.image][0]
+
+def region_to_brainregion(regionmask, region):
+    """ Given brain regionmask and RegionProperty from regionprops,
+        return brainregion with largest overlap with region.
+    """
+    u, c = np.unique(regionmask[region.slice[1:]][np.any(region.image, axis=0)], return_counts=True)
+    return u[c.argsort()[::-1]][0]
+
+def region_to_centroid(region, sampling=[1.,0.142,0.142]):
+    """ Given RegionProperty from regionprops, returns centroid in um.
+    """
+    return region.centroid*np.asarray(sampling)
+
+def segmentation_to_meta_df(mask, regionmask, roikey):
+    """ Takes cell segmention and brain region segmentation,
+        return meta dataframe for the cells.
+    """
+    regions = regionprops(mask)
+    
+    df = pd.DataFrame()
+    df["Label"] = [region_to_label(mask, region) for region in regions]
+    df["Label"] = df["Label"].astype(int)
+    df["BrainRegion"] = [region_to_brainregion(regionmask, region) for region in regions]
+    df["BrainRegion"] = df["BrainRegion"].astype(int)
+    df["ROI"] = roikey
+    df.index = df["ROI"]+"_"+df["Label"].astype(str)
+    df[["z","y","x"]] = [region_to_centroid(region) for region in regions]
+    
+    return df
