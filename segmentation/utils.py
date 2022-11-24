@@ -1,8 +1,9 @@
 import numpy as np
 from scipy.ndimage import distance_transform_edt
-
 from skimage.measure import regionprops
 import pandas as pd
+
+from .brainregions import regionkey
 
 ##############################
 ### Modify Segmentation
@@ -79,6 +80,7 @@ def segmentation_to_meta_df(mask, regionmask, roikey):
     df["Label"] = df["Label"].astype(int)
     df["BrainRegion"] = [region_to_brainregion(regionmask, region) for region in regions]
     df["BrainRegion"] = df["BrainRegion"].astype(int)
+    df["BrainRegionName"] = [regionkey[reg][0] for reg in df["BrainRegion"]]
     df["ROI"] = roikey
     df.index = df["ROI"]+"_"+df["Label"].astype(str)
     df[["z","y","x"]] = [region_to_centroid(region) for region in regions]
