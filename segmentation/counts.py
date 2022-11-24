@@ -17,12 +17,12 @@ def read_loom(file):
 ### Assign counts with Segmentation
 ##############################
 
-def assign_counts_from_segmentation(countsfile, metafile, segmentationfile, segmentationkey, outputfile, roikey, verbose=False):
+def assign_counts_from_segmentation(countsfile, genemetafile, segmentationfile, segmentationkey, segmentationmetafile, outputfile, roikey, verbose=False):
     """ Assign counts, using a full cell segmentation.
     """
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Loading Resolve Counts")
     rim = ResolveImage(countsfile)
-    rim.add_metadata(metafile)
+    rim.add_metadata(genemetafile)
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Loading Cell Segmentation")
     segmentation = np.load(segmentationfile)[segmentationkey]
     
@@ -38,7 +38,7 @@ def assign_counts_from_segmentation(countsfile, metafile, segmentationfile, segm
     obs = pd.DataFrame(np.unique(rim.full_data["cell"])[1:,None], columns=["MaskIndex"])
     obs["CellName"] = roikey+"_"+obs["MaskIndex"].astype(str)
     obs.index = np.asarray(obs["MaskIndex"])
-    obs["ROI"] = roikey
+    #obs["ROI"] = roikey
     
     counts = pd.DataFrame(np.zeros((obs.shape[0],var.shape[0])),
                           columns = np.asarray(var["GeneR"]),
@@ -60,6 +60,9 @@ def assign_counts_from_segmentation(countsfile, metafile, segmentationfile, segm
     adata.obs["HumanGeneCount"] = counts[adata.var.loc[adata.var["Species"]=="Human","GeneR"]].sum(axis=1)
     adata.obs["MouseGeneShare"] = counts[adata.var.loc[adata.var["Species"]=="Mouse","GeneR"]].sum(axis=1)/counts.sum(axis=1)
     adata.obs["HumanGeneShare"] = counts[adata.var.loc[adata.var["Species"]=="Human","GeneR"]].sum(axis=1)/counts.sum(axis=1)
+    
+    meta = pd.read_table(segmentationmetafile, sep=",", index_col=0)
+    adata.obs = adata.obs.merge(meta, left_index=True, right_index=True)
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Saving Result")
     adata.write_loom(outputfile)
