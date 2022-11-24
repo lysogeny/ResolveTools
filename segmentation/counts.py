@@ -34,8 +34,10 @@ def assign_counts_from_segmentation(countsfile, genemetafile, segmentationfile, 
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Started with",len(rim.full_data),"counts, could not assign",(rim.full_data["cell"]==0).sum(),"of those.")
     rim.full_data["cell"] = rim.full_data["cell"].astype(int)
     
+    meta = pd.read_table(segmentationmetafile, sep=",", index_col=0)
+    
     var = rim.genes.copy()
-    obs = pd.DataFrame(np.unique(rim.full_data["cell"])[1:,None], columns=["MaskIndex"])
+    obs = pd.DataFrame(np.asarray(meta["Label"]), columns=["MaskIndex"])
     obs["CellName"] = roikey+"_"+obs["MaskIndex"].astype(str)
     obs.index = np.asarray(obs["MaskIndex"])
     #obs["ROI"] = roikey
@@ -61,7 +63,6 @@ def assign_counts_from_segmentation(countsfile, genemetafile, segmentationfile, 
     adata.obs["MouseGeneShare"] = counts[adata.var.loc[adata.var["Species"]=="Mouse","GeneR"]].sum(axis=1)/counts.sum(axis=1)
     adata.obs["HumanGeneShare"] = counts[adata.var.loc[adata.var["Species"]=="Human","GeneR"]].sum(axis=1)/counts.sum(axis=1)
     
-    meta = pd.read_table(segmentationmetafile, sep=",", index_col=0)
     adata.obs = adata.obs.merge(meta, left_index=True, right_index=True)
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Saving Result")
