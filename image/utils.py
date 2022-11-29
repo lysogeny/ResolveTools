@@ -34,14 +34,25 @@ def save_tiff_from_float(filename, data, compression="zlib"):
 ##############################
 
 from skimage import exposure
+import mclahe as mc
 
-def claher(img):
+def claher(img, kernel_size = 127, clip_limit = 0.01, nbins = 256):
     """
     Runs Contrast Limited Adaptive Histogram Equalization (CLAHE) and normalizes to [0,1].
     """
-    img = exposure.equalize_adapthist(img, kernel_size = 127, clip_limit = 0.01, nbins = 256)
+    img = exposure.equalize_adapthist(img, kernel_size = kernel_size, clip_limit = clip_limit, nbins = nbins)
     img = img / img.max()
     return img
+
+def mclaher(img, kernel_size=[10,128,128],n_bins=128,clip_limit=0.01,adaptive_hist_range=False):
+    """
+    Runs Contrast Limited Adaptive Histogram Equalization (CLAHE) in 3D and normalizes to [0,1].
+    """
+    img = mc.mclahe(img, kernel_size=kernel_size, n_bins=n_bins, clip_limit=clip_limit, adaptive_hist_range=adaptive_hist_range)
+    img = img / img.max()
+    return img
+
+
 
 import cv2
 import numpy as np

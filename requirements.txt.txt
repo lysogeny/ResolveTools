@@ -9,3 +9,5 @@ readlif
 numba
 loompy
 scanpy
+
+mclahe # pip install --upgrade https://github.com/VincentStimper/mclahe/archive/numpy.zip
