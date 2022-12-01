@@ -29,7 +29,7 @@ def gene_to_upper(gene):
 def read_Resolve_count(filepath):
     """ Read resolve count table.
     """
-    return pd.read_table(filepath, header=None, names=["x","y","z","GeneR","FP"], usecols=list(range(5)))
+    return pd.read_table(filepath, header=None, names=["x","y","z","GeneR"], usecols=list(range(4)))
 
 ##############################
 ### Class to load Resolve Data
