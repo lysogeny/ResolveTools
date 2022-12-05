@@ -93,4 +93,6 @@ def segmentation_to_meta_df(mask, regionmask, roikey):
     df["Volume"] = [region_to_volume(region) for region in regions]
     df["VolumeImg"] = [region_to_volume(region, sampling=[1,1,1]) for region in regions]
     
+    ### ADD CONNECTIVITY!!!!!
+    
     return df
