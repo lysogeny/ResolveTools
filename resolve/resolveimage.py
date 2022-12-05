@@ -26,10 +26,15 @@ def gene_to_upper(gene):
             else:
                 return gene.upper()+"_M"
 
-def read_Resolve_count(filepath):
+def read_Resolve_count(filepath, isbaysor=False):
     """ Read resolve count table.
     """
-    return pd.read_table(filepath, header=None, names=["x","y","z","GeneR"], usecols=list(range(4)))
+    if not isbaysor:
+        return pd.read_table(filepath, header=None, names=["x","y","z","GeneR"], usecols=list(range(4)))
+    else:
+        counts = pd.read_table(filepath, sep=",")
+        counts = counts.rename(columns={"gene":"GeneR"})
+        return counts
 
 ##############################
 ### Class to load Resolve Data
@@ -38,9 +43,12 @@ def read_Resolve_count(filepath):
 class ResolveImage:
     """ Document me!
     """
-    def __init__(self, filepath, imagepaths = {}, voxelsize = (0.138,0.138,0.3125,r"$\mu$m"), dosparse=False):
-        self.full_data = read_Resolve_count(filepath)
-        self.full_data["GeneR"] = [gene_to_upper(g) for g in self.full_data["GeneR"]]
+    def __init__(self, filepath, imagepaths = {}, voxelsize = (0.138,0.138,0.3125,r"$\mu$m"), dosparse=False, isbaysor=False):
+        self.full_data = read_Resolve_count(filepath, isbaysor)
+        if not isbaysor:
+            self.full_data["GeneR"] = [gene_to_upper(g) for g in self.full_data["GeneR"]]
+        else:
+            pass
         
         genes = np.asarray(np.unique(self.full_data["GeneR"],return_counts=True)).T
         self.genes = pd.DataFrame(genes,columns=["GeneR","Count"]).sort_values(["Count"],
