@@ -13,6 +13,14 @@ def read_single_modality_confocal(file, norm=True):
     else:
         return img
 
+def get_single_modality_shape(file):
+    """ Get shape of single modality confocal .tif image,
+        without actually reading the image.
+    """
+    tif = TiffFile(file)
+    shape = [len(tif.pages)] + list(tif.pages[0].shape)
+    return shape
+
 ##############################
 ### Saving images
 ##############################
