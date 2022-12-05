@@ -3,6 +3,7 @@
 ##############################
 
 import cv2
+from tifffile import TiffFile
 
 def read_single_modality_confocal(file, norm=True):
     """ Read single modality confocal .tif image.
@@ -16,6 +17,7 @@ def read_single_modality_confocal(file, norm=True):
 def get_single_modality_shape(file):
     """ Get shape of single modality confocal .tif image,
         without actually reading the image.
+        [z,y,x]
     """
     tif = TiffFile(file)
     shape = [len(tif.pages)] + list(tif.pages[0].shape)
