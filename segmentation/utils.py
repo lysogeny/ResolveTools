@@ -69,6 +69,11 @@ def region_to_centroid(region, sampling=[1.,0.142,0.142]):
     """
     return region.centroid*np.asarray(sampling)
 
+def region_to_volume(region, sampling=[1.,0.142,0.142]):
+    """ Given RegionProperty from regionprops, returns volume in um.
+    """
+    return region.image.sum()*np.prod(sampling)
+
 def segmentation_to_meta_df(mask, regionmask, roikey):
     """ Takes cell segmention and brain region segmentation,
         return meta dataframe for the cells.
@@ -85,5 +90,7 @@ def segmentation_to_meta_df(mask, regionmask, roikey):
     df.index = df["ROI"]+"_"+df["Label"].astype(str)
     df[["z","y","x"]] = [region_to_centroid(region) for region in regions]
     df[["zImg","yImg","xImg"]] = [region_to_centroid(region, sampling=[1,1,1]) for region in regions]
+    df["Volume"] = [region_to_volume(region) for region in regions]
+    df["VolumeImg"] = [region_to_volume(region, sampling=[1,1,1]) for region in regions]
     
     return df
