@@ -48,7 +48,7 @@ class ResolveImage:
         if not isbaysor:
             self.full_data["GeneR"] = [gene_to_upper(g) for g in self.full_data["GeneR"]]
         else:
-            pass
+            self.full_data[["x","y","z"]] = np.round(self.full_data[["x","y","z"]]/self.voxelsize[:3],0).astype(int)
         
         genes = np.asarray(np.unique(self.full_data["GeneR"],return_counts=True)).T
         self.genes = pd.DataFrame(genes,columns=["GeneR","Count"]).sort_values(["Count"],
