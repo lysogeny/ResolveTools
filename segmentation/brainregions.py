@@ -20,3 +20,16 @@ def processes_regionsegmentation_initial(seg, regkey = regionkey):
     for key in regkey.keys():
         segregions[np.all(seg[...,::-1]==regkey[key][1], axis=-1)] = key
     return segregions
+
+##############################
+### Brain Regions Of Resolve Counts
+##############################
+
+def add_regions_to_resolve(pathin, pathout, pathregion, verbose=True):
+    """ Add region column to registered resolve transcript list.
+    """
+    rim = ResolveImage(pathin)
+    regions = np.load(pathregion)["regions"]
+    rim.full_data["Region"] = regions[rim.full_data["y"], rim.full_data["x"]].astype(int)
+    rim.full_data.to_csv(pathout, index=False)
+    if verbose: print(np.unique(rim.full_data["Region"], return_counts=True))
