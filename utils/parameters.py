@@ -3,6 +3,9 @@
 ### Microscope parameters
 ##############################
 
+# Size of the tiles resolve uses
+RESOLVE_TILE_SIZE = 2144
+
 # Resolve resoultion
 RESOLVE_VOXEL_SIZE = [0.3125,0.138,0.138,r"$\mu$m","zyx"]
 
