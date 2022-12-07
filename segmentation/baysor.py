@@ -3,6 +3,7 @@ import pandas as pd
 import anndata
 
 from ..resolve.resolveimage import ResolveImage
+from ..utils.parameters import CONFOCAL_VOXEL_SIZE
 
 ##############################
 ### Translate transcripts between Baysor and Resolve
