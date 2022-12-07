@@ -23,12 +23,12 @@ def counts_resolve_to_baysor(resolvepath, baysorpath, dropgenes=[]):
 ### Assign counts using only Baysor
 ##############################
 
-def assign_counts_from_Baysor(countsfile, genemetafile, roikey, do_for="cell"):
+def assign_counts_from_Baysor(resultsfolder, genemetafile, roikey, do_for="cell"):
     """ Assign counts to cells, using Baysor output.
     """
     if not do_for in ["cell", "cluster"]: raise ValueError("Not available")
     
-    segmentation = pd.read_table(countsfile, sep=",")
+    segmentation = pd.read_table(resultsfolder+"/segmentation.csv", sep=",")
     segmentation = segmentation[~segmentation["is_noise"]]
     
     var = pd.DataFrame(np.unique(segmentation["gene"]))
@@ -65,5 +65,8 @@ def assign_counts_from_Baysor(countsfile, genemetafile, roikey, do_for="cell"):
     adata.obs["HumanGeneCount"] = counts[adata.var.loc[adata.var["Species"]=="Human","GeneR"]].sum(axis=1)
     adata.obs["MouseGeneShare"] = counts[adata.var.loc[adata.var["Species"]=="Mouse","GeneR"]].sum(axis=1)/counts.sum(axis=1)
     adata.obs["HumanGeneShare"] = counts[adata.var.loc[adata.var["Species"]=="Human","GeneR"]].sum(axis=1)/counts.sum(axis=1)
+    
+    adata.obs = pd.merge(adata.obs,pd.read_table(resultsfolder+"/segmentation_cell_stats.csv", sep=",").rename(columns={"cell":"MaskIndex"}),
+         left_on="MaskIndex", right_on="MaskIndex")
     
     return adata
