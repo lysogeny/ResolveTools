@@ -66,7 +66,9 @@ def assign_counts_from_Baysor(resultsfolder, genemetafile, roikey, do_for="cell"
     adata.obs["MouseGeneShare"] = counts[adata.var.loc[adata.var["Species"]=="Mouse","GeneR"]].sum(axis=1)/counts.sum(axis=1)
     adata.obs["HumanGeneShare"] = counts[adata.var.loc[adata.var["Species"]=="Human","GeneR"]].sum(axis=1)/counts.sum(axis=1)
     
-    adata.obs = pd.merge(adata.obs,pd.read_table(resultsfolder+"/segmentation_cell_stats.csv", sep=",").rename(columns={"cell":"MaskIndex"}),
-         left_on="MaskIndex", right_on="MaskIndex")
+    merged =  pd.merge(adata.obs,pd.read_table(resultsfolder+"/segmentation_cell_stats.csv", sep=",").rename(columns={"cell":"MaskIndex"}),
+                            left_on="MaskIndex", right_on="MaskIndex")
+    merged.index = adata.obs.index
+    adata.obs = = merged
     
     return adata
