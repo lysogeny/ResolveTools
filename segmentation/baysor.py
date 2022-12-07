@@ -9,13 +9,20 @@ from ..utils.parameters import CONFOCAL_VOXEL_SIZE
 ### Translate transcripts between Baysor and Resolve
 ##############################
 
-def counts_resolve_to_baysor(resolvepath, baysorpath, dropgenes=[], sampling=CONFOCAL_VOXEL_SIZE[:3]):
+def counts_resolve_to_baysor(resolvepath, baysorpath, dropgenes=[], sampling=CONFOCAL_VOXEL_SIZE[:3],
+                             segmaskpath="", segmaskkey="mask_post"):
     """ Transform counts from resolve format to Baysor format.
+        Can add cell identity from segmentation mask.
     """
     res = ResolveImage(resolvepath)
+    if segmaskpath:
+        mask = np.load(segmaskpath)[segmaskkey]
+        res.full_data["cell"] = mask[res.full_data["z"], res.full_data["y"], res.full_data["x"]]
+        #res.full_data["cell"] = res.full_data["cell"].astype(str)
+        #res.full_data.loc[res.full_data["cell"]=="0", "cell"] = ""
     res.full_data[["z","y","x"]] = np.round(res.full_data[["z","y","x"]]*sampling,3)
-    res.full_data = res.full_data[["x","y","z","GeneR"]].copy()
-    res.full_data.columns = ["x","y","z","gene"]
+    #res.full_data = res.full_data[["x","y","z","GeneR"]].copy()
+    res.full_data = res.full_data.rename(columns={"GeneR":"gene"})
     if len(dropgenes)>0:
         res.full_data = res.full_data[[g not in dropgenes for g in res.full_data["gene"]]]
     res.full_data.to_csv(baysorpath, index=False)
