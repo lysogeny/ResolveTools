@@ -62,8 +62,6 @@ def mclaher(img, kernel_size=[10,128,128],n_bins=128,clip_limit=0.01,adaptive_hi
     img = img / img.max()
     return img
 
-
-
 import cv2
 import numpy as np
 

@@ -8,11 +8,11 @@ from ..resolve.resolveimage import ResolveImage
 ### Translate transcripts between Baysor and Resolve
 ##############################
 
-def counts_resolve_to_baysor(resolvepath, baysorpath, dropgenes=[]):
+def counts_resolve_to_baysor(resolvepath, baysorpath, dropgenes=[], sampling=CONFOCAL_VOXEL_SIZE[:3]):
     """ Transform counts from resolve format to Baysor format.
     """
     res = ResolveImage(resolvepath)
-    res.full_data[["x","y","z"]] = np.round(res.full_data[["x","y","z"]]*res.voxelsize[:3],3)
+    res.full_data[["z","y","x"]] = np.round(res.full_data[["z","y","x"]]*sampling,3)
     res.full_data = res.full_data[["x","y","z","GeneR"]].copy()
     res.full_data.columns = ["x","y","z","gene"]
     if len(dropgenes)>0:

@@ -5,6 +5,7 @@ from scipy.optimize import curve_fit
 
 from ..resolve.resolveimage import read_Resolve_count
 from ..image.utils import read_single_modality_confocal
+from ..resolve.resolveimage import RESOLVE_VOXEL_SIZE
 
 ##############################
 ### Resolve Counts
@@ -113,7 +114,7 @@ def register_3d_counts(countfile, dapifile, outfile, verbose=False, binsize=1000
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Initially",len(counts),"counts")
     counts = read_Resolve_count(countfile)
-    counts["z"] = counts["z"]*0.3125 # Hardcoded resolution from Resolve
+    counts["z"] = counts["z"]*RESOLVE_VOXEL_SIZE[0] # Hardcoded resolution from Resolve
     counts_to_plane(counts, dapiplane, countplane)
     counts["z"] = np.round(counts["z"],0).astype(int)
     counts = counts.loc[np.logical_and(counts["z"]>=0, counts["z"]<dapi.shape[0])]

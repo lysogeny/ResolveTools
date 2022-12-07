@@ -4,6 +4,7 @@ import cv2
 import scipy.sparse as sparse
 
 from ..image.utils import claher
+from ..utils.parameters import RESOLVE_VOXEL_SIZE
 
 ##############################
 ### Helpers
@@ -43,12 +44,13 @@ def read_Resolve_count(filepath, isbaysor=False):
 class ResolveImage:
     """ Document me!
     """
-    def __init__(self, filepath, imagepaths = {}, voxelsize = (0.138,0.138,0.3125,r"$\mu$m"), dosparse=False, isbaysor=False):
+    def __init__(self, filepath, imagepaths = {}, voxelsize = RESOLVE_VOXEL_SIZE, dosparse=False, isbaysor=False):
+        self.voxelsize = voxelsize
         self.full_data = read_Resolve_count(filepath, isbaysor)
         if not isbaysor:
             self.full_data["GeneR"] = [gene_to_upper(g) for g in self.full_data["GeneR"]]
         else:
-            self.full_data[["x","y","z"]] = np.round(self.full_data[["x","y","z"]]/voxelsize[:3],0).astype(int)
+            self.full_data[["z","y","x"]] = np.round(self.full_data[["z","y","x"]]/self.voxelsize[:3],0).astype(int)
         
         genes = np.asarray(np.unique(self.full_data["GeneR"],return_counts=True)).T
         self.genes = pd.DataFrame(genes,columns=["GeneR","Count"]).sort_values(["Count"],
@@ -57,7 +59,6 @@ class ResolveImage:
         self.gene_names = np.asarray(self.genes["GeneR"])
         
         self.imagesize = (100000,100000)
-        self.voxelsize = voxelsize
         
         self.images = {}
         for image in imagepaths:
