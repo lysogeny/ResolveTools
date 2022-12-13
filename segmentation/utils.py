@@ -2,6 +2,7 @@ import numpy as np
 from scipy.ndimage import distance_transform_edt
 from skimage.measure import regionprops
 import pandas as pd
+import itertools
 
 from .brainregions import regionkey
 from ..utils.parameters import CONFOCAL_VOXEL_SIZE
@@ -104,6 +105,7 @@ def segmentation_to_meta_df(mask, regionmask, roikey, sampling=CONFOCAL_VOXEL_SI
 
 def save_sampled_boundary(mask, inner, file, N=60, sampling=CONFOCAL_VOXEL_SIZE, seed=42):
     """ Get all boundary points for cells in mask, sample N per z plane and save them.
+        N=60 is sufficient for only negligible differences to full boundary.
         
         Can set random seed for reproducibility.
     """
