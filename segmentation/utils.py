@@ -97,3 +97,32 @@ def segmentation_to_meta_df(mask, regionmask, roikey, sampling=CONFOCAL_VOXEL_SI
     ### ADD CONNECTIVITY!!!!!
     
     return df
+
+##############################
+### Sample Boundary
+##############################
+
+def save_sampled_boundary(mask, inner, file, N=60, sampling=CONFOCAL_VOXEL_SIZE, seed=42):
+    """ Get all boundary points for cells in mask, sample N per z plane and save them.
+        
+        Can set random seed for reproducibility.
+    """
+    np.random.seed(seed)
+    df = pd.DataFrame(np.argwhere(inner), columns=["z","y","x"])
+    df["MaskIndex"] = mask[df["z"], df["y"], df["x"]]
+    df[["z","y","x"]] = df[["z","y","x"]]*np.asarray(sampling[:3])
+    def sample(x, N=60):
+        ind = x.index
+        return np.random.choice(list(ind), size=N, replace=False) if len(ind)>N else list(ind)
+    def sampleallz(x, N=60):
+        vals = x.groupby("z").apply(lambda x: sample(x, N))
+        return list(vals)
+    cells = df.groupby("MaskIndex").apply(lambda x: sampleallz(x))
+    cells = cells.apply(lambda x: list(itertools.chain.from_iterable(x)))
+    index = list(cells.index)
+    order = "xyz"
+    fullpoints = np.asarray(df[["x","y","z"]])
+    points = np.asarray([fullpoints[cell] for cell in cells], dtype=object)
+    print("Total boundary points:  ",len(df))
+    print("Sampled boundary points:",sum([len(p) for p in points]))
+    np.savez_compressed(file, index=index, order=order, points=points)
