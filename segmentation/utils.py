@@ -76,7 +76,7 @@ def region_to_volume(region, sampling=CONFOCAL_VOXEL_SIZE[:3]):
     """
     return region.image.sum()*np.prod(sampling)
 
-def segmentation_to_meta_df(mask, regionmask, roikey, sampling=CONFOCAL_VOXEL_SIZE[:3]):
+def segmentation_to_meta_df(mask, regionmask = None, roikey = "ROI", sampling=CONFOCAL_VOXEL_SIZE[:3]):
     """ Takes cell segmention and brain region segmentation,
         return meta dataframe for the cells.
     """
@@ -85,9 +85,10 @@ def segmentation_to_meta_df(mask, regionmask, roikey, sampling=CONFOCAL_VOXEL_SI
     df = pd.DataFrame()
     df["Label"] = [region_to_label(mask, region) for region in regions]
     df["Label"] = df["Label"].astype(int)
-    df["BrainRegion"] = [region_to_brainregion(regionmask, region) for region in regions]
-    df["BrainRegion"] = df["BrainRegion"].astype(int)
-    df["BrainRegionName"] = [regionkey[reg][0] for reg in df["BrainRegion"]]
+    if regionmask is not None:
+        df["BrainRegion"] = [region_to_brainregion(regionmask, region) for region in regions]
+        df["BrainRegion"] = df["BrainRegion"].astype(int)
+        df["BrainRegionName"] = [regionkey[reg][0] for reg in df["BrainRegion"]]
     df["ROI"] = roikey
     df.index = df["ROI"]+"_"+df["Label"].astype(str)
     df[["z","y","x"]] =          [region_to_centroid(region, sampling=sampling) for region in regions]
@@ -95,7 +96,7 @@ def segmentation_to_meta_df(mask, regionmask, roikey, sampling=CONFOCAL_VOXEL_SI
     df["Volume"] =               [region_to_volume(region, sampling=sampling) for region in regions]
     df["VolumeImg"] =            [region_to_volume(region, sampling=[1,1,1]) for region in regions]
     
-    ### ADD CONNECTIVITY!!!!!
+    ### ADD CONNECTIVITY?
     
     return df
 
