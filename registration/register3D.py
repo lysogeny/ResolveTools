@@ -11,7 +11,7 @@ from ..resolve.resolveimage import RESOLVE_VOXEL_SIZE
 ### Resolve Counts
 ##############################
 
-def get_tiled_mean_counts(counts, binsize = 1000):
+def get_tiled_mean_counts(counts, binsize = 1000, Ncutoff = 20):
     """ Get mean z position across Resolve counts in tiles of size binsize x binsize.
     """
     Nx, Ny = counts["x"].max()//binsize, counts["y"].max()//binsize
@@ -22,9 +22,10 @@ def get_tiled_mean_counts(counts, binsize = 1000):
         for j in range(Nx):
             maskx = np.logical_and(counts["x"]>=j*binsize, counts["x"]<(j+1)*binsize)
             masky = np.logical_and(counts["y"]>=i*binsize, counts["y"]<(i+1)*binsize)
-            means[i,j] = counts.loc[np.logical_and(maskx, masky),"z"].mean()
-            xs[i,j] = counts.loc[np.logical_and(maskx, masky),"x"].mean() # (j+0.5)*binsize
-            ys[i,j] = counts.loc[np.logical_and(maskx, masky),"y"].mean() # (i+0.5)*binsize
+            mask = np.logical_and(maskx, masky)
+            means[i,j] = counts.loc[mask,"z"].mean() if mask.sum()>Ncutoff else np.nan
+            xs[i,j] = counts.loc[mask,"x"].mean() if mask.sum()>Ncutoff else np.nan # (j+0.5)*binsize
+            ys[i,j] = counts.loc[mask,"y"].mean() if mask.sum()>Ncutoff else np.nan # (i+0.5)*binsize
     return means, xs, ys
 
 def get_tiled_mean_counts_fromfile(file, binsize = 1000):
@@ -84,7 +85,7 @@ def fit_plane(vals_, xs, ys, p0=[5e-4, 5e-4, 4]):
     """
     vals = vals_.flatten()
     x = np.asarray([xs.flatten(), ys.flatten()])
-    popt, pcov = curve_fit(plane, x, vals, p0=p0)
+    popt, pcov = curve_fit(plane, x[:,~np.isnan(vals)], vals[~np.isnan(vals)], p0=p0)
     return popt, pcov
 
 def point_to_new_plane(x, y, z, target, source):
@@ -103,14 +104,14 @@ def counts_to_plane(counts, target, source):
     """
     counts["z"] = [point_to_new_plane(x, y, z, target, source) for x, y, z in zip(counts["x"], counts["y"], counts["z"])]
 
-def register_3d_counts(countfile, dapifile, outfile, verbose=False, binsize=1000):
+def register_3d_counts(countfile, dapifile, outfile, verbose=True, binsize=1000):
     """ Register Resolve 3D counts to 3D confocal DAPI image.
     """
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Loading Image")
     dapi = read_single_modality_confocal(dapifile)
     
     countplane = fit_plane(*get_tiled_mean_counts_fromfile(countfile, binsize))[0]
-    dapiplane = fit_plane(*get_tiled_mean_image(dapi, binsize = 1000, mode="mean"))[0]
+    dapiplane = fit_plane(*get_tiled_mean_image(dapi, binsize, mode="mean"))[0]
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Initially",len(counts),"counts")
     counts = read_Resolve_count(countfile)
