@@ -113,8 +113,8 @@ def register_3d_counts(countfile, dapifile, outfile, verbose=True, binsize=1000)
     countplane = fit_plane(*get_tiled_mean_counts_fromfile(countfile, binsize))[0]
     dapiplane = fit_plane(*get_tiled_mean_image(dapi, binsize, mode="mean"))[0]
     
-    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Initially",len(counts),"counts")
     counts = read_Resolve_count(countfile)
+    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Initially",len(counts),"counts")
     counts["z"] = counts["z"]*RESOLVE_VOXEL_SIZE[0] # Hardcoded resolution from Resolve
     counts_to_plane(counts, dapiplane, countplane)
     counts["z"] = np.round(counts["z"],0).astype(int)
