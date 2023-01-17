@@ -20,6 +20,10 @@ def _find_homography_from_descriptors(target, kp2, des2, source, kp1, des1, keep
     
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Found",len(good_matches),"good matches.")
     
+    if len(good_matches) < 5:
+        print(datetime.now().strftime("%H:%M:%S"),"- Found too few good matches! Returning None.")
+        return None, None
+    
     if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Find Homography")
     ref_matched_kpts = np.float32([kp1[m[0].queryIdx].pt for m in good_matches])
     sensed_matched_kpts = np.float32([kp2[m[0].trainIdx].pt for m in good_matches])
