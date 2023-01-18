@@ -17,7 +17,7 @@ def gene_to_upper(gene):
         s, l = gene.split(" ~ ")
         return gene_to_upper(s) + " ~ " + gene_to_upper(l)
     else:
-        if gene == gene.upper():
+        if gene == gene.upper() and gene.upper() not in ["H2-D1", "H2-K1", "PDGFRA"]:
             return gene
         else:
             if gene == "mCherry":
