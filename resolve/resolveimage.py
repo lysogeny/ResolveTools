@@ -80,7 +80,10 @@ class ResolveImage:
         return sparse.lil_matrix(sparse.coo_matrix((np.ones_like(df["x"]), (df["y"],df["x"])), shape=self.imagesize))
     
     def add_metadata(self, filepath):
-        genes = pd.read_excel(filepath).fillna("")
+        if ".xlsx" in filepath:
+            genes = pd.read_excel(filepath).fillna("")
+        else:
+            genes = pd.read_table(filepath, sep=",").fillna("")
         genes.index = [gene.upper() if sp!="Mouse" else gene.upper()+"_M" for gene, sp in zip(genes["Gene"], genes["Species"])]
         #genes["GeneMod"] = [gene.upper() if sp!="Mouse" else gene.upper()+"_M" for gene, sp in zip(genes["Gene"], genes["Species"])]
         #genes.index = np.asarray(genes["GeneMod"])
