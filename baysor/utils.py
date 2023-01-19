@@ -109,14 +109,15 @@ def combine_baysor_transcripts(files, outfile, shift=5000, cellshift=50000):
 ### Combined ROIs
 ##############################
 
-def load_multiple_ROIs_transcripts(resultfolder, genemetafile):
+def load_multiple_ROIs_transcripts(resultfolder, genemetafile, do_correction=False):
     """ Load transcripts for run that contains multiple ROIs.
     """
     meta = pd.read_table(genemetafile, sep=",", index_col=0)
     transcripts_wnoise = pd.read_table(resultfolder+"/segmentation.csv", sep=",")
-    transcripts_wnoise.loc[transcripts_wnoise["gene"]=='H2-K1', "gene"] = 'H2-K1_M'
-    transcripts_wnoise.loc[transcripts_wnoise["gene"]=='MARCH4', "gene"] = 'MARCHF4'
-    transcripts_wnoise.loc[transcripts_wnoise["gene"]=='PDGFRA', "gene"] = 'PDGFRA_M'
+    if do_correction:
+        transcripts_wnoise.loc[transcripts_wnoise["gene"]=='H2-K1', "gene"] = 'H2-K1_M'
+        transcripts_wnoise.loc[transcripts_wnoise["gene"]=='MARCH4', "gene"] = 'MARCHF4'
+        transcripts_wnoise.loc[transcripts_wnoise["gene"]=='PDGFRA', "gene"] = 'PDGFRA_M'
     transcripts_wnoise["celltype"] = np.asarray((meta["Species"] + " - " + \
                                           meta["Celltype"]).loc[transcripts_wnoise["gene"]])
     transcripts_wnoise["celltypegene"] = transcripts_wnoise["celltype"] + " - " + transcripts_wnoise["gene"]
