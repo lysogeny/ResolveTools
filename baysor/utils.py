@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import anndata
 import re
+import os
 
 from ..resolve.resolveimage import ResolveImage
 from ..utils.parameters import CONFOCAL_VOXEL_SIZE
