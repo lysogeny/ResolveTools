@@ -104,3 +104,69 @@ def combine_baysor_transcripts(files, outfile, shift=5000, cellshift=50000):
     combined.to_csv(outfile, index=False)
     np.savez_compressed(outfile.replace(".csv","_combinekey.npz"),
                         roikeys = roikeys, boundaries = boundaries, cellboundaries = cellboundaries)
+
+##############################
+### Combined ROIs
+##############################
+
+def load_multiple_ROIs_transcripts(resultfolder, genemetafile):
+    """ Load transcripts for run that contains multiple ROIs.
+    """
+    meta = pd.read_table(genemetafile, sep=",", index_col=0)
+    transcripts_wnoise = pd.read_table(resultfolder+"/segmentation.csv", sep=",")
+    transcripts_wnoise.loc[transcripts_wnoise["gene"]=='H2-K1', "gene"] = 'H2-K1_M'
+    transcripts_wnoise.loc[transcripts_wnoise["gene"]=='MARCH4', "gene"] = 'MARCHF4'
+    transcripts_wnoise.loc[transcripts_wnoise["gene"]=='PDGFRA', "gene"] = 'PDGFRA_M'
+    transcripts_wnoise["celltype"] = np.asarray((meta["Species"] + " - " + \
+                                          meta["Celltype"]).loc[transcripts_wnoise["gene"]])
+    transcripts_wnoise["celltypegene"] = transcripts_wnoise["celltype"] + " - " + transcripts_wnoise["gene"]
+    transcripts = transcripts_wnoise[~transcripts_wnoise["is_noise"]].copy().reset_index(drop=True)
+    return transcripts, transcripts_wnoise
+
+def cluster_crosstab(trans, norm = True, normgenes = True, wnoise = True, comparekey = "celltype", wtotal=True):
+    """ Crosstab of Baysor transcripts with assigned cluster.
+    """
+    cross = pd.crosstab(trans[comparekey], trans["cluster"])
+    total = cross.sum(axis=1)
+    if not norm: return cross
+    if normgenes:
+        cross = np.round(cross/np.asarray(cross.sum(axis=1))[:,None]*100,0).astype(int)
+        cross = cross.astype(str)
+        cross[cross=="0"] = ""
+        if wtotal: cross["total"] = total
+        return cross
+    else:
+        cross = np.round(cross/np.asarray(cross.sum(axis=0))[None]*100,0).astype(int)
+        cross = cross.astype(str)
+        cross[cross=="0"] = ""
+        if wtotal: cross["total"] = total
+        return cross
+
+def cluster_combine(transcripts, transcripts_wnoise, clusterlist=[]):
+        """ Combine clusters.
+            Order of the combinations in clusterlist is irrelevant, will
+            always reduce all equivalent clusters to that with the lowest index.
+        """
+        Ninit = np.unique(transcripts["cluster"]).shape[0]
+        clusterlistsorted = [sorted(l, reverse=True) for l in sorted(clusterlist, key=max, reverse=True)]
+        replacedict = dict(zip(np.arange(transcripts["cluster"].max()+1),np.arange(transcripts["cluster"].max()+1)))
+        for repl_ in clusterlistsorted:
+            repl = [replacedict[k] for k in repl_]
+            for key in replacedict:
+                if replacedict[key] in repl:
+                    replacedict[key] = min(repl)
+        for key in replacedict:
+            transcripts.loc[transcripts["cluster"]==key, "cluster"] = replacedict[key]
+            transcripts_wnoise.loc[transcripts_wnoise["cluster"]==key, "cluster"] = replacedict[key]
+
+def save_clusterids(resultfolder, cluster_combine_list, clusternamedict):
+    """ Save information on clusters for Baysor run.
+    """
+    np.savez_compressed(resultfolder+"/cluster_ids.npz",
+                        cluster_combine_list = cluster_combine_list,
+                        clusternamedict = clusternamedict)
+
+
+
+
+
