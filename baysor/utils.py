@@ -167,7 +167,38 @@ def save_clusterids(resultfolder, cluster_combine_list, clusternamedict):
                         cluster_combine_list = cluster_combine_list,
                         clusternamedict = clusternamedict)
 
+def split_baysor_ROIs(resultfolder, keyfile):
+    """ Split Baysor results into ROIs.
+        Creates folder structure resultsfolder/rois/...
+    """
+    file = np.load(keyfile)
+    roikeys = file["roikeys"]
+    boundaries = file["boundaries"]
+    transcripts = pd.read_table(resultfolder+"/segmentation.csv", sep=",")
+    cells = pd.read_table(resultfolder+"/segmentation_cell_stats.csv", sep=",")
+    counts = pd.read_table(resultfolder+"/segmentation_counts.tsv", sep="\t", index_col=0)
+    counts.columns = counts.columns.astype(int)
 
+    def split_df(dffull_, boundaries):
+        dffull = dffull_.copy()
+        dffull["roi"] = np.searchsorted(boundaries, dffull["x"])
+        roi_dfs = []
+        for i in range(len(boundaries)):
+            df = dffull.loc[dffull["roi"]==i].loc[:,dffull.columns!="roi"].copy()
+            if i>0: df["x"] -= boundaries[i-1]
+            roi_dfs.append(df)
+        return roi_dfs
+
+    roi_transcripts = split_df(transcripts, boundaries)
+    roi_cells = split_df(cells, boundaries)
+
+    for i in range(len(roikeys)):
+        path = resultfolder+"/rois/"+roikeys[i]
+        if not os.path.exists(path):
+            os.makedirs(path)
+        roi_transcripts[i].to_csv(path+"/segmentation.csv", sep=",", index=False)
+        roi_cells[i].to_csv(path+"/segmentation_cell_stats.csv", sep=",", index=False)
+        counts[roi_cells[i]["cell"]].to_csv(path+"/segmentation_counts.csv", sep="\t")
 
 
 
