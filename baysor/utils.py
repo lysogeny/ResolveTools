@@ -35,7 +35,7 @@ def counts_resolve_to_baysor(resolvepath, baysorpath, dropgenes=[], sampling=CON
 ### Assign counts using only Baysor
 ##############################
 
-def assign_counts_from_Baysor(resultsfolder, genemetafile, roikey, do_for="cell"):
+def assign_counts_from_Baysor(resultsfolder, genemetafile, roikey, do_for="cell", clusteridfile=""):
     """ Assign counts to cells, using Baysor output.
     """
     if not do_for in ["cell", "cluster"]: raise ValueError("Not available")
@@ -85,6 +85,25 @@ def assign_counts_from_Baysor(resultsfolder, genemetafile, roikey, do_for="cell"
         printwtime("  Merged has {}, original has {} cells.".format(len(merged.index), len(obs.index)))
     adata = adata[merged.index].copy() # In case there are any errors in comparison of 
     adata.obs = merged
+    
+    adata.obs["BaysorCluster"] = adata.obs["cluster"]
+    
+    if clusteridfile:
+        cluster_combine_list = np.load(clusteridfile, allow_pickle=True)["cluster_combine_list"]
+        clusternamedict = np.load(clusteridfile, allow_pickle=True)["clusternamedict"].item()
+        
+        clusterlistsorted = [sorted(l, reverse=True) for l in sorted(cluster_combine_list, key=max, reverse=True)]
+        replacedict = dict(zip(np.arange(adata.obs["cluster"].max()+1),np.arange(adata.obs["cluster"].max()+1)))
+        for repl_ in clusterlistsorted:
+            repl = [replacedict[k] for k in repl_]
+            for key in replacedict:
+                if replacedict[key] in repl:
+                    replacedict[key] = min(repl)
+        for key in replacedict:
+            adata.obs.loc[adata.obs["BaysorCluster"]==key, "BaysorCluster"] = replacedict[key]
+        
+        if len(clusternamedict)>0:
+            adata.obs["BaysorClusterCelltype"] = adata.obs["BaysorCluster"].apply(lambda x: clusternamedict[x])
     
     return adata
 
