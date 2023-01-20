@@ -5,6 +5,40 @@ import matplotlib.pyplot as plt
 from ..segmentation.visualize import get_rgb_distinct
 
 ##############################
+### Simple Cell Plot
+##############################
+
+def plot_celltypedist(cellloomfile, segmetafile, idfile, outfile="")
+    """ Plot cells, colored by celltype color from idfile.
+    """
+    adata = read_loom(cellloomfile)
+    seg = pd.read_table(segmetafile, sep=",", index_col=0)
+    humannamecolordict = np.load(idfile, allow_pickle=True)["humannamecolordict"].item()
+    mousenamecolordict = np.load(idfile, allow_pickle=True)["mousenamecolordict"].item()
+    
+    xmax, ymax = adata.obs["x"].max(), adata.obs["y"].max()
+    fig, ax = plt.subplots(2,1,figsize=(int(6*ymax/500), int(6*2*xmax/500)))
+    
+    sns.scatterplot(x=seg["x"], y=seg["y"], color="gray", ax=ax[0], legend=False, s=10, alpha=0.5)
+    sns.scatterplot(x=seg["x"], y=seg["y"], color="gray", ax=ax[1], legend=False, s=10, alpha=0.5)
+    
+    for key in humannamecolordict:
+        mask = adata.obs["BaysorClusterCelltype"]==key
+        sns.scatterplot(x=adata.obs.loc[mask, "x"], y=adata.obs.loc[mask, "y"],
+                        color=humannamecolordict[key], label=key, ax=ax[0], legend=False, s=10, alpha=1)
+    ax[0].legend(loc='upper center', ncol=3, bbox_to_anchor=(0.5, 1.1), facecolor='white', framealpha=1)
+    
+    for key in mousenamecolordict:
+        mask = adata.obs["BaysorClusterCelltype"]==key
+        sns.scatterplot(x=adata.obs.loc[mask, "x"], y=adata.obs.loc[mask, "y"],
+                        color=mousenamecolordict[key], label=key, ax=ax[1], legend=False, s=10, alpha=1)
+    ax[1].legend(loc='upper center', ncol=3, bbox_to_anchor=(0.5, 1.1), facecolor='white', framealpha=1)
+    
+    if outfile:
+        plt.savefig(outfile)
+        plt.close()
+
+##############################
 ### Final Assignment Plot
 ##############################
 

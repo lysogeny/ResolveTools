@@ -185,13 +185,15 @@ def cluster_combine(transcripts, transcripts_wnoise, clusterlist=[]):
             transcripts.loc[transcripts["cluster"]==key, "cluster"] = replacedict[key]
             transcripts_wnoise.loc[transcripts_wnoise["cluster"]==key, "cluster"] = replacedict[key]
 
-def save_clusterids(resultfolder, cluster_combine_list, clusternamedict, cross):
+def save_clusterids(resultfolder, cluster_combine_list, clusternamedict, cross, humannamecolordict, mousenamecolordict):
     """ Save information on clusters for Baysor run.
     """
     np.savez_compressed(resultfolder+"/cluster_ids.npz",
                         cluster_combine_list = cluster_combine_list,
                         clusternamedict = clusternamedict,
-                        cross = cross)
+                        cross = cross,
+                        humannamecolordict = humannamecolordict,
+                        mousenamecolordict = mousenamecolordict)
 
 def find_cluster_correspondence(target, source):
     """ Find corresponding Baysor clusters, using cluster_crosstab(..., wtotal=False) output.
