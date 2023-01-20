@@ -5,7 +5,7 @@ import re
 import os
 from scipy.spatial import distance_matrix
 
-from ..resolve.resolveimage import ResolveImage
+from ..resolve.resolveimage import ResolveImage, read_genemeta_file
 from ..utils.parameters import CONFOCAL_VOXEL_SIZE
 
 ##############################
@@ -66,8 +66,7 @@ def assign_counts_from_Baysor(resultsfolder, genemetafile, roikey, do_for="cell"
     adata = anndata.AnnData(counts, dtype=np.float32, obs = obs, var = var )
     
     adata.var["Count"] = adata.X.sum(axis=0)
-    genes = pd.read_excel(genemetafile).fillna("")
-    genes.index = [gene.upper() if sp!="Mouse" else gene.upper()+"_M" for gene, sp in zip(genes["Gene"], genes["Species"])]
+    genes = read_genemeta_file(genemetafile)
     adata.var = pd.merge(adata.var,genes,left_index=True,right_index=True,how="left")#.sort_values("Count",ascending=False)
     adata = adata[:,adata.var.sort_values("Count",ascending=False).index].copy()
     
@@ -114,7 +113,7 @@ def combine_baysor_transcripts(files, outfile, shift=5000, cellshift=50000):
 def load_multiple_ROIs_transcripts(resultfolder, genemetafile, do_correction=True):
     """ Load transcripts for run that contains multiple ROIs.
     """
-    meta = pd.read_table(genemetafile, sep=",", index_col=0)
+    meta = read_genemeta_file(genemetafile)
     transcripts_wnoise = pd.read_table(resultfolder+"/segmentation.csv", sep=",")
     if do_correction:
         transcripts_wnoise.loc[transcripts_wnoise["gene"]=='H2-K1', "gene"] = 'H2-K1_M'
@@ -197,7 +196,7 @@ def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_corr
     counts.columns = counts.columns.astype(int)
     
     if idfile and genemetafile:
-        meta = pd.read_table(genemetafile, sep=",", index_col=0)
+        meta = read_genemeta_file(genemetafile)
         transcripts["celltype"] = np.asarray((meta["Species"] + " - " + meta["Celltype"]).loc[transcripts["gene"]])
         target = pd.DataFrame(np.load(idfile, allow_pickle=True)["cross"])
         repl = find_cluster_correspondence(target, cluster_crosstab(transcripts, wtotal=False))

@@ -39,6 +39,16 @@ def read_Resolve_count(filepath, isbaysor=False):
         counts = counts.rename(columns={"gene":"GeneR"})
         return counts
 
+def read_genemeta_file(filepath):
+    """ Read gene meta file.
+    """
+    if ".xlsx" in filepath:
+        genes = pd.read_excel(filepath).fillna("")
+        genes.index = [gene.upper() if sp!="Mouse" else gene.upper()+"_M" for gene, sp in zip(genes["Gene"], genes["Species"])]
+    else:
+        genes = pd.read_table(filepath, sep=",", index_col=0).fillna("")
+    return genes
+
 ##############################
 ### Class to load Resolve Data
 ##############################
@@ -82,11 +92,7 @@ class ResolveImage:
         return sparse.lil_matrix(sparse.coo_matrix((np.ones_like(df["x"]), (df["y"],df["x"])), shape=self.imagesize))
     
     def add_metadata(self, filepath):
-        if ".xlsx" in filepath:
-            genes = pd.read_excel(filepath).fillna("")
-            genes.index = [gene.upper() if sp!="Mouse" else gene.upper()+"_M" for gene, sp in zip(genes["Gene"], genes["Species"])]
-        else:
-            genes = pd.read_table(filepath, sep=",", index_col=0).fillna("")
+        genes = read_genemeta_file(filepath)
         #genes["GeneMod"] = [gene.upper() if sp!="Mouse" else gene.upper()+"_M" for gene, sp in zip(genes["Gene"], genes["Species"])]
         #genes.index = np.asarray(genes["GeneMod"])
         self.genes = pd.merge(self.genes,genes,left_index=True,right_index=True,how="left").sort_values("Count",ascending=False)
