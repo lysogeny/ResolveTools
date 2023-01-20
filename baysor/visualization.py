@@ -8,7 +8,7 @@ from ..segmentation.visualize import get_rgb_distinct
 ### Simple Cell Plot
 ##############################
 
-def plot_celltypedist(cellloomfile, segmetafile, idfile, outfile="")
+def plot_celltypedist(cellloomfile, segmetafile, idfile, outfile=""):
     """ Plot cells, colored by celltype color from idfile.
     """
     adata = read_loom(cellloomfile)
