@@ -10,7 +10,7 @@ from ResolveTools.segmentation.counts import read_loom
 ### Simple Cell Plot
 ##############################
 
-def plot_celltypedist(cellloomfile, segmetafile, idfile, outfile=""):
+def plot_celltypedist(cellloomfile, segmetafile, idfile, outfile="", title=""):
     """ Plot cells, colored by celltype color from idfile.
     """
     adata = read_loom(cellloomfile)
@@ -36,6 +36,7 @@ def plot_celltypedist(cellloomfile, segmetafile, idfile, outfile=""):
                         color=mousenamecolordict[key], label=key, ax=ax[1], legend=False, s=10, alpha=1)
     ax[1].legend(loc='upper center', ncol=3, bbox_to_anchor=(0.5, 1.1), facecolor='white', framealpha=1)
     
+    if title: plt.suptitle(title, size=30)
     if outfile:
         plt.savefig(outfile)
         plt.close()
