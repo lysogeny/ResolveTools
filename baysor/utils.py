@@ -6,6 +6,7 @@ import os
 from scipy.spatial import distance_matrix
 
 from ..resolve.resolveimage import ResolveImage, read_genemeta_file
+from ..utils.utils import printwtime
 from ..utils.parameters import CONFOCAL_VOXEL_SIZE
 
 ##############################
@@ -79,7 +80,9 @@ def assign_counts_from_Baysor(resultsfolder, genemetafile, roikey, do_for="cell"
     merged =  pd.merge(adata.obs,pd.read_table(resultsfolder+"/segmentation_cell_stats.csv", sep=",").rename(columns={"cell":"MaskIndex"}),
                             left_on="MaskIndex", right_on="MaskIndex")
     merged.index = np.asarray(merged["CellName"])
-    adata = adata[merged.index].copy()
+    if not len(merged.index)>0.95*len(obs.index) or len(merged.index)<1.05*len(obs.index):
+        printwtime("Discreptancy between cell count in _cell_stats.csv and cells in segmentation.csv!")
+    adata = adata[merged.index].copy() # In case there are any errors in comparison of 
     adata.obs = merged
     
     return adata
