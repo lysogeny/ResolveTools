@@ -111,7 +111,7 @@ def combine_baysor_transcripts(files, outfile, shift=5000, cellshift=50000):
 ### Combined ROIs
 ##############################
 
-def load_multiple_ROIs_transcripts(resultfolder, genemetafile, do_correction=False):
+def load_multiple_ROIs_transcripts(resultfolder, genemetafile, do_correction=True):
     """ Load transcripts for run that contains multiple ROIs.
     """
     meta = pd.read_table(genemetafile, sep=",", index_col=0)
@@ -178,7 +178,7 @@ def find_cluster_correspondence(target, source):
         raise ValueError("Found no clear correspondence of cluster labels!")
     return repl
 
-def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile=""):
+def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_correction=True):
     """ Split Baysor results into ROIs.
         Creates folder structure resultsfolder/rois/...
         Corresponds cluster labels to that from idfile if provided.
@@ -187,6 +187,11 @@ def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile=""):
     roikeys = file["roikeys"]
     boundaries = file["boundaries"]
     transcripts = pd.read_table(resultfolder+"/segmentation.csv", sep=",")
+    if do_correction:
+        transcripts.loc[transcripts["gene"]=='H2-K1', "gene"] = 'H2-K1_M'
+        transcripts.loc[transcripts["gene"]=='MARCH4', "gene"] = 'MARCHF4'
+        transcripts.loc[transcripts["gene"]=='PDGFRA', "gene"] = 'PDGFRA_M'
+    
     cells = pd.read_table(resultfolder+"/segmentation_cell_stats.csv", sep=",")
     counts = pd.read_table(resultfolder+"/segmentation_counts.tsv", sep="\t", index_col=0)
     counts.columns = counts.columns.astype(int)

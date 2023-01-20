@@ -17,13 +17,15 @@ def gene_to_upper(gene):
         s, l = gene.split(" ~ ")
         return gene_to_upper(s) + " ~ " + gene_to_upper(l)
     else:
-        if gene == gene.upper() and gene.upper() not in ["H2-D1", "H2-K1", "PDGFRA"]:
+        if gene == gene.upper() and gene.upper() not in ["H2-D1", "H2-K1", "PDGFRA", "MARCH4"]:
             return gene
         else:
             if gene == "mCherry":
                 return gene.upper()
             elif gene == "eGFP":
                 return "GFP"
+            elif gene == "MARCH4":
+                return "MARCHF4"
             else:
                 return gene.upper()+"_M"
 
