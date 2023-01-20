@@ -82,6 +82,7 @@ def assign_counts_from_Baysor(resultsfolder, genemetafile, roikey, do_for="cell"
     merged.index = np.asarray(merged["CellName"])
     if not len(merged.index)>0.98*len(obs.index) or len(merged.index)<1.02*len(obs.index):
         printwtime("Discreptancy between cell count in _cell_stats.csv and cells in segmentation.csv!")
+        printwtime("  Merged has {}, original has {} cells.".format(len(merged.index), len(obs.index)))
     adata = adata[merged.index].copy() # In case there are any errors in comparison of 
     adata.obs = merged
     
