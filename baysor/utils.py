@@ -3,6 +3,7 @@ import pandas as pd
 import anndata
 import re
 import os
+from scipy.spatial import distance_matrix
 
 from ..resolve.resolveimage import ResolveImage
 from ..utils.parameters import CONFOCAL_VOXEL_SIZE
@@ -161,16 +162,27 @@ def cluster_combine(transcripts, transcripts_wnoise, clusterlist=[]):
             transcripts.loc[transcripts["cluster"]==key, "cluster"] = replacedict[key]
             transcripts_wnoise.loc[transcripts_wnoise["cluster"]==key, "cluster"] = replacedict[key]
 
-def save_clusterids(resultfolder, cluster_combine_list, clusternamedict):
+def save_clusterids(resultfolder, cluster_combine_list, clusternamedict, cross):
     """ Save information on clusters for Baysor run.
     """
     np.savez_compressed(resultfolder+"/cluster_ids.npz",
                         cluster_combine_list = cluster_combine_list,
-                        clusternamedict = clusternamedict)
+                        clusternamedict = clusternamedict,
+                        cross = cross)
 
-def split_baysor_ROIs(resultfolder, keyfile):
+def find_cluster_correspondence(target, source):
+    """ Find corresponding Baysor clusters, using cluster_crosstab(..., wtotal=False) output.
+    """
+    dist = distance_matrix(target.replace("","0").astype(int).T, source.replace("","0").astype(int).T)
+    repl = dist.argmin(axis=1)+1
+    if len(repl) != len(np.unique(repl)) or dist[np.arange(len(repl)),repl-1].max()>2:
+        raise ValueError("Found no clear correspondence of cluster labels!")
+    return repl
+
+def split_baysor_ROIs(resultfolder, keyfile, idfile=""):
     """ Split Baysor results into ROIs.
         Creates folder structure resultsfolder/rois/...
+        Corresponds cluster labels to that from idfile if provided.
     """
     file = np.load(keyfile)
     roikeys = file["roikeys"]
@@ -179,6 +191,12 @@ def split_baysor_ROIs(resultfolder, keyfile):
     cells = pd.read_table(resultfolder+"/segmentation_cell_stats.csv", sep=",")
     counts = pd.read_table(resultfolder+"/segmentation_counts.tsv", sep="\t", index_col=0)
     counts.columns = counts.columns.astype(int)
+    
+    if idfile:
+        target = pd.DataFrame(np.load(idfile, allow_pickle=True)["cross"])
+        repl = find_cluster_correspondence(target, cluster_crosstab(transcripts, wtotal=False))
+        transcripts["cluster"] = repl[transcripts["cluster"]-1]
+        cells["cluster"] = repl[cells["cluster"]-1]
 
     def split_df(dffull_, boundaries):
         dffull = dffull_.copy()
