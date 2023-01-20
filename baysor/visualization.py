@@ -3,6 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from ..segmentation.visualize import get_rgb_distinct
+from ResolveTools.segmentation.counts import read_loom
 
 ##############################
 ### Simple Cell Plot
