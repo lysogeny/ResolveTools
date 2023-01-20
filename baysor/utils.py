@@ -126,7 +126,7 @@ def load_multiple_ROIs_transcripts(resultfolder, genemetafile, do_correction=Fal
     transcripts = transcripts_wnoise[~transcripts_wnoise["is_noise"]].copy().reset_index(drop=True)
     return transcripts, transcripts_wnoise
 
-def cluster_crosstab(trans, norm = True, normgenes = True, wnoise = True, comparekey = "celltype", wtotal=True):
+def cluster_crosstab(trans, norm = True, normgenes = True, wnoise = True, comparekey = "celltype", wtotal=True, roundn=0):
     """ Crosstab of Baysor transcripts with assigned cluster.
     """
     cross = pd.crosstab(trans[comparekey], trans["cluster"])
