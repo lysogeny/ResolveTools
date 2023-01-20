@@ -45,7 +45,7 @@ def assign_counts_from_Baysor(resultsfolder, genemetafile, roikey, do_for="cell"
     var = pd.DataFrame(np.unique(segmentation["gene"]))
     var.columns = ["GeneR"]
     var.index = np.asarray(var["GeneR"])
-    obs = pd.DataFrame(np.arange(segmentation[do_for].max())+1, columns=["MaskIndex"])
+    obs = pd.DataFrame(np.unique(segmentation[do_for]), columns=["MaskIndex"])
     obs["CellName"] = roikey+"_"+obs["MaskIndex"].astype(str)
     obs.index = np.asarray(obs["MaskIndex"])
     obs["ROI"] = roikey
@@ -78,8 +78,7 @@ def assign_counts_from_Baysor(resultsfolder, genemetafile, roikey, do_for="cell"
     
     merged =  pd.merge(adata.obs,pd.read_table(resultsfolder+"/segmentation_cell_stats.csv", sep=",").rename(columns={"cell":"MaskIndex"}),
                             left_on="MaskIndex", right_on="MaskIndex")
-    merged.index = np.asarray(merged["CellName"])
-    adata = adata[merged.index].copy()
+    merged.index = adata.obs.index
     adata.obs = merged
     
     return adata
