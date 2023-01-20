@@ -193,7 +193,7 @@ def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile=""):
     
     if idfile and genemetafile:
         meta = pd.read_table(genemetafile, sep=",", index_col=0)
-        transcripts["celltype"] = np.asarray((meta["Species"] + " - " + meta["Celltype"]).loc[transcripts_wnoise["gene"]])
+        transcripts["celltype"] = np.asarray((meta["Species"] + " - " + meta["Celltype"]).loc[transcripts["gene"]])
         target = pd.DataFrame(np.load(idfile, allow_pickle=True)["cross"])
         repl = find_cluster_correspondence(target, cluster_crosstab(transcripts, wtotal=False))
         transcripts = transcripts[transcripts.columns!="celltype"].copy()
