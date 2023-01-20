@@ -19,7 +19,7 @@ def plot_celltypedist(cellloomfile, segmetafile, idfile, outfile="", title=""):
     mousenamecolordict = np.load(idfile, allow_pickle=True)["mousenamecolordict"].item()
     
     xmax, ymax = adata.obs["x"].max(), adata.obs["y"].max()
-    fig, ax = plt.subplots(2,1,figsize=(int(6*ymax/500), int(6*2*xmax/500)))
+    fig, ax = plt.subplots(2,1,figsize=(int(6*xmax/500), int(6*2*ymax/500)))
     
     sns.scatterplot(x=seg["x"], y=seg["y"], color="gray", ax=ax[0], legend=False, s=10, alpha=0.5)
     sns.scatterplot(x=seg["x"], y=seg["y"], color="gray", ax=ax[1], legend=False, s=10, alpha=0.5)
