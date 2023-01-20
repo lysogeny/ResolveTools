@@ -120,8 +120,7 @@ def load_multiple_ROIs_transcripts(resultfolder, genemetafile, do_correction=Fal
         transcripts_wnoise.loc[transcripts_wnoise["gene"]=='H2-K1', "gene"] = 'H2-K1_M'
         transcripts_wnoise.loc[transcripts_wnoise["gene"]=='MARCH4', "gene"] = 'MARCHF4'
         transcripts_wnoise.loc[transcripts_wnoise["gene"]=='PDGFRA', "gene"] = 'PDGFRA_M'
-    transcripts_wnoise["celltype"] = np.asarray((meta["Species"] + " - " + \
-                                          meta["Celltype"]).loc[transcripts_wnoise["gene"]])
+    transcripts_wnoise["celltype"] = np.asarray((meta["Species"] + " - " + meta["Celltype"]).loc[transcripts_wnoise["gene"]])
     transcripts_wnoise["celltypegene"] = transcripts_wnoise["celltype"] + " - " + transcripts_wnoise["gene"]
     transcripts = transcripts_wnoise[~transcripts_wnoise["is_noise"]].copy().reset_index(drop=True)
     return transcripts, transcripts_wnoise
@@ -179,7 +178,7 @@ def find_cluster_correspondence(target, source):
         raise ValueError("Found no clear correspondence of cluster labels!")
     return repl
 
-def split_baysor_ROIs(resultfolder, keyfile, idfile=""):
+def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile=""):
     """ Split Baysor results into ROIs.
         Creates folder structure resultsfolder/rois/...
         Corresponds cluster labels to that from idfile if provided.
@@ -192,9 +191,13 @@ def split_baysor_ROIs(resultfolder, keyfile, idfile=""):
     counts = pd.read_table(resultfolder+"/segmentation_counts.tsv", sep="\t", index_col=0)
     counts.columns = counts.columns.astype(int)
     
-    if idfile:
+    if idfile and genemetafile:
+        meta = pd.read_table(genemetafile, sep=",", index_col=0)
+        transcripts["celltype"] = np.asarray((meta["Species"] + " - " + meta["Celltype"]).loc[transcripts_wnoise["gene"]])
         target = pd.DataFrame(np.load(idfile, allow_pickle=True)["cross"])
         repl = find_cluster_correspondence(target, cluster_crosstab(transcripts, wtotal=False))
+        transcripts = transcripts[transcripts.columns!="celltype"].copy()
+        
         transcripts["cluster"] = repl[transcripts["cluster"]-1]
         cells["cluster"] = repl[cells["cluster"]-1]
 
