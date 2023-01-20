@@ -38,7 +38,7 @@ def plot_celltypedist(cellloomfile, segmetafile, idfile, outfile="", title=""):
     
     if title: plt.suptitle(title, size=30)
     if outfile:
-        plt.savefig(outfile, dpi=200)
+        plt.savefig(outfile, dpi=300)
         plt.close()
 
 ##############################
