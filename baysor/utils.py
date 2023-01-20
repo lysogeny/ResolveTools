@@ -93,7 +93,8 @@ def assign_counts_from_Baysor(resultsfolder, genemetafile, roikey, do_for="cell"
         clusternamedict = np.load(clusteridfile, allow_pickle=True)["clusternamedict"].item()
         
         clusterlistsorted = [sorted(l, reverse=True) for l in sorted(cluster_combine_list, key=max, reverse=True)]
-        replacedict = dict(zip(np.arange(adata.obs["cluster"].max()+1),np.arange(adata.obs["cluster"].max()+1)))
+        clusterNmax = max(max([max(l) for l in clusterlistsorted]), adata.obs["cluster"].max())
+        replacedict = dict(zip(np.arange(clusterNmax+1),np.arange(clusterNmax+1)))
         for repl_ in clusterlistsorted:
             repl = [replacedict[k] for k in repl_]
             for key in replacedict:
