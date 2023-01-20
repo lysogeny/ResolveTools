@@ -89,6 +89,9 @@ def segmentation_to_meta_df(mask, regionmask = None, roikey = "ROI", sampling=CO
         df["BrainRegion"] = [region_to_brainregion(regionmask, region) for region in regions]
         df["BrainRegion"] = df["BrainRegion"].astype(int)
         df["BrainRegionName"] = [regionkey[reg][0] for reg in df["BrainRegion"]]
+    else:
+        df["BrainRegion"] = 0
+        df["BrainRegionName"] = ""
     df["ROI"] = roikey
     df.index = df["ROI"]+"_"+df["Label"].astype(str)
     df[["z","y","x"]] =          [region_to_centroid(region, sampling=sampling) for region in regions]
