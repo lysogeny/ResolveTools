@@ -195,12 +195,14 @@ def save_clusterids(resultfolder, cluster_combine_list, clusternamedict, cross, 
                         humannamecolordict = humannamecolordict,
                         mousenamecolordict = mousenamecolordict)
 
-def find_cluster_correspondence(target, source):
+def find_cluster_correspondence(target, source, ignore_indices=[], cutoff = 2):
     """ Find corresponding Baysor clusters, using cluster_crosstab(..., wtotal=False) output.
     """
-    dist = distance_matrix(target.replace("","0").astype(int).T, source.replace("","0").astype(int).T)
+    target_f = np.delete(np.asarray(target.replace("","0").astype(int).T), ignore_indices, axis=1)
+    source_f = np.delete(np.asarray(source.replace("","0").astype(int).T), ignore_indices, axis=1)
+    dist = distance_matrix(target_f, source_f)
     repl = dist.argmin(axis=1)+1
-    if len(repl) != len(np.unique(repl)) or dist[np.arange(len(repl)),repl-1].max()>2:
+    if len(repl) != len(np.unique(repl)) or dist[np.arange(len(repl)),repl-1].max()>cutoff:
         raise ValueError("Found no clear correspondence of cluster labels!")
     return repl
 
