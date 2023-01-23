@@ -663,9 +663,10 @@ def apply_combine_baysor_output(resultfolder, segloomfile, genemetafile, boundar
     roidata.assign_baysor_toseg_fromdist(8, 0.4, 1)
     roidata.assign_counts_tosegcells()
     
+    printwtime("Make anndatas")
     roidata.make_adata_segcells(clusternamedict).write_loom(resultfolder+"/segmentation_cells.loom")
     roidata.make_adata_baysorcells(clusternamedict).write_loom(resultfolder+"/baysor_cells_post.loom")
     
+    printwtime("Plot assignments")
     plot_final_assignment(roidata, file=resultfolder+"/cell_assignment.jpeg")
-    plot_final_assignment(roidata, background=background,
-                      file=resultfolder+"/cell_assignment_wbackground.jpeg")
+    if background: plot_final_assignment(roidata, background=background, file=resultfolder+"/cell_assignment_wbackground.jpeg")
