@@ -9,6 +9,7 @@ from .cell import BaysorCell, SegmentationCell
 from .utils import assign_counts_from_Baysor
 from ..segmentation.counts import read_loom
 from ..utils.utils import printwtime
+from ..resolve.resolveimage import read_genemeta_file
 
 
 ##############################
@@ -84,9 +85,10 @@ class SegmentedResolveROI:
         self.obsbay = self.adata_baysor.obs
         self.cellsbay = self.obsbay.apply(lambda x: BaysorCell(x), axis=1)
         
+        self.genemeta = read_genemeta_file(genemetafile)
         self.transcripts_wnoise = pd.read_table(resultfolder+"/segmentation.csv", sep=",")
-        self.transcripts_wnoise["celltype"] = np.asarray((self.adata_baysor.var["Species"] + " - " + \
-                                              self.adata_baysor.var["Celltype"]).loc[self.transcripts_wnoise["gene"]])
+        self.transcripts_wnoise["celltype"] = np.asarray((self.genemeta["Species"] + " - " + \
+                                              self.genemeta["Celltype"]).loc[self.transcripts_wnoise["gene"]])
         self.transcripts_wnoise["celltypegene"] = self.transcripts_wnoise["celltype"] + " - " + self.transcripts_wnoise["gene"]
         self.transcripts = self.transcripts_wnoise[~self.transcripts_wnoise["is_noise"]].copy().reset_index(drop=True)
     
