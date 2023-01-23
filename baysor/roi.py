@@ -348,6 +348,9 @@ class SegmentedResolveROI:
         
         candidates = self._cgetbay("direct_connections_index")[self._cgetbay("direct_connections_index").apply(len)>0]
         if self.verbose: printwtime(f"  Contains {len(candidates)} Baysor cells that have any direct connection to the segmentation")
+        if self.verbose and len(candidates)==0:
+            printwtime(f"  Found no direct connections, skipping assignment from direct connections")
+            return None
         
         # First assign cells to segmentation where the connection is unique in both directions
         u, c = np.unique(list(itertools.chain.from_iterable(candidates)), return_counts=True)
