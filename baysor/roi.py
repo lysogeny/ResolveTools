@@ -578,7 +578,7 @@ class SegmentedResolveROI:
                 totalcounts += [cell.counts.sum()]
                 cell.tpositions = np.concatenate(list(self.cellsbay.loc[cell.baysorcells].cell.cget("tpositions")), axis=0)
         
-        if self.verbose: printwtime(f"  Assigned {sum(totalcounts)} transcripts to {totalcells}.")
+        if self.verbose: printwtime(f"  Assigned {sum(totalcounts)} transcripts to {totalcells} cells.")
         median = np.round(np.median(totalcounts),1)
         mean = np.round(np.mean(totalcounts),1)
         if self.verbose: printwtime(f"  The mean cell has {mean:.1f} counts, the median is {median:.1f}.")
@@ -621,3 +621,43 @@ class SegmentedResolveROI:
         
         self.adata = adata
         return adata
+    
+    def make_adata_baysorcells(self, clusternamedict = {}):
+        """ Make adata from Baysor cells. 
+            Similar to result from assign_counts_from_Baysor, but includes assignment and better position.
+        """
+        self.adata_baysor.obs[["x","y","z"]] = np.asarray(list(self.cellsbay.cell.cget("position")))
+        self.adata_baysor.obs["assigned_to"] = self.cellsbay.cell.cget("segcell")
+        self.adata_baysor.obs["BaysorCluster"] = self.adata_baysor.obs["cluster"]
+        if len(clusternamedict)>0:
+            self.adata_baysor.obs["BaysorClusterCelltype"] = self.adata_baysor.obs["BaysorCluster"].apply(lambda x: clusternamedict[x])
+
+        return self.adata_baysor
+
+##############################
+### Util function
+##############################
+
+def apply_combine_baysor_output(resultfolder, segloomfile, genemetafile, boundaryfile, idfile, background=""):
+    cluster_combine_list = np.load(idfile, allow_pickle=True)["cluster_combine_list"]
+    clusternamedict = np.load(idfile, allow_pickle=True)["clusternamedict"].item()
+    
+    roidata = SegmentedResolveROI(resultfolder, segloomfile, genemetafile)
+    
+    roidata.cluster_combine(cluster_combine_list)
+    roidata.add_baysor_initial()
+    roidata.add_direct_connectivity()
+    roidata.add_baysor_neighbors(10)
+    roidata.add_baysor_segneighbors(boundaryfile, 20)
+    roidata.resolve_nonunique_direct(0.82)
+    roidata.assign_baysor_toseg_direct(10, 0.6)
+    roidata.assign_baysor_toseg_fromdist(10, 0.55, 1)
+    roidata.assign_baysor_toseg_fromdist(8, 0.4, 1)
+    roidata.assign_counts_tosegcells()
+    
+    roidata.make_adata_segcells(clusternamedict).write_loom(resultfolder+"/segmentation_cells.loom")
+    roidata.make_adata_baysorcells(clusternamedict).write_loom(resultfolder+"/baysor_cells_post.loom")
+    
+    plot_final_assignment(roidata, file=resultfolder+"/cell_assignment.jpeg")
+    plot_final_assignment(roidata, background=background,
+                      file=resultfolder+"/cell_assignment_wbackground.jpeg")
