@@ -87,6 +87,8 @@ class SegmentedResolveROI:
         
         self.genemeta = read_genemeta_file(genemetafile)
         self.transcripts_wnoise = pd.read_table(resultfolder+"/segmentation.csv", sep=",")
+        if "prior_segmentation" not in self.transcripts_wnoise.columns:
+            self.transcripts_wnoise["prior_segmentation"] = 0
         self.transcripts_wnoise["celltype"] = np.asarray((self.genemeta["Species"] + " - " + \
                                               self.genemeta["Celltype"]).loc[self.transcripts_wnoise["gene"]])
         self.transcripts_wnoise["celltypegene"] = self.transcripts_wnoise["celltype"] + " - " + self.transcripts_wnoise["gene"]
