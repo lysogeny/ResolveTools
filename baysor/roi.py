@@ -10,6 +10,7 @@ from .utils import assign_counts_from_Baysor
 from ..segmentation.counts import read_loom
 from ..utils.utils import printwtime
 from ..resolve.resolveimage import read_genemeta_file
+from .visualization import plot_final_assignment
 
 
 ##############################
