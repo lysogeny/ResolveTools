@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from ..segmentation.visualize import get_rgb_distinct
 from ..segmentation.counts import read_loom
 from ..image.utils import read_single_modality_confocal
+from ..utils.parameters import CONFOCAL_VOXEL_SIZE
 
 ##############################
 ### Simple Cell Plot
