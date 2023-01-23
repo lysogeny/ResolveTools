@@ -206,7 +206,7 @@ def find_cluster_correspondence(target, source, ignore_indices=[], cutoff = 2):
         raise ValueError("Found no clear correspondence of cluster labels!")
     return repl
 
-def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_correction=True):
+def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_correction=True, ignore_indices=[]):
     """ Split Baysor results into ROIs.
         Creates folder structure resultsfolder/rois/...
         Corresponds cluster labels to that from idfile if provided.
@@ -228,7 +228,7 @@ def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_corr
         meta = read_genemeta_file(genemetafile)
         transcripts["celltype"] = np.asarray((meta["Species"] + " - " + meta["Celltype"]).loc[transcripts["gene"]])
         target = pd.DataFrame(np.load(idfile, allow_pickle=True)["cross"])
-        repl = find_cluster_correspondence(target, cluster_crosstab(transcripts, wtotal=False))
+        repl = find_cluster_correspondence(target, cluster_crosstab(transcripts[~transcripts["is_noise"]], wtotal=False), ignore_indices=ignore_indices)
         transcripts = transcripts.loc[:,transcripts.columns!="celltype"].copy()
         
         transcripts["cluster"] = repl[transcripts["cluster"]-1]
