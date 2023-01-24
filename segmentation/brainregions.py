@@ -5,6 +5,7 @@ from PIL import Image
 from matplotlib import image as mimage
 
 from .visualize import get_rgb_distinct
+from ..image.utils import get_single_modality_shape
 from matplotlib.colors import rgb2hex
 
 ##############################
