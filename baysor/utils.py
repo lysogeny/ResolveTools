@@ -156,13 +156,15 @@ def cluster_crosstab(trans, norm = True, normgenes = True, wnoise = True, compar
     total = cross.sum(axis=1)
     if not norm: return cross
     if normgenes:
-        cross = np.round(cross/np.asarray(cross.sum(axis=1))[:,None]*100,roundn).astype(int)
+        cross = np.round(cross/np.asarray(cross.sum(axis=1))[:,None]*100,roundn)
+        if roundn==0: cross = cross.astype(int)
         cross = cross.astype(str)
         cross[cross=="0"] = ""
         if wtotal: cross["total"] = total
         return cross
     else:
         cross = np.round(cross/np.asarray(cross.sum(axis=0))[None]*100,roundn).astype(int)
+        if roundn==0: cross = cross.astype(int)
         cross = cross.astype(str)
         cross[cross=="0"] = ""
         if wtotal: cross["total"] = total
