@@ -70,7 +70,7 @@ regioncolors = np.asarray([[  0,   0,   0],
 #ff000000_nl_ff4aa1ff_nl_ff414eff_nl_ff52ffa5_nl_ff0eff50_nl_ffa0ff6f_nl_ffdaff69_nl_ff23baff_nl_ff43ff50_nl_ffdf7dff_nl_ffffa463_nl_ff27ffe8_nl_ffff4848_nl_ff396fff_nl_ff05e5ff_nl_ff0cffb3_nl_ffff5e34_nl_fff733ff_nl_ffff78b0_nl_ffff1848_nl_ff7b36ff_nl_ffad49ff_nl_ffff3cb5_nl_ff63ff4a_nl_fff7ff22_nl_ff2806ff_nl_ffff1717_nl_ffff52e1_nl_ff9fff2a_nl_ffffb53d_nl_ffffdd3c
 
 
-def processes_regionsegmentation_initial(imagepath, maskkey, annotpath, maskkey="mask_full", regioncolors = regioncolors):
+def processes_regionsegmentation_initial(imagepath, maskpath, annotpath, maskkey="mask_full", regioncolors = regioncolors):
     """ Processes initial color region segmentation with key, save region mask.
     """
     image = Image.open(imagepath)
