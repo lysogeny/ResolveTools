@@ -2,6 +2,7 @@ import numpy as np
 from skimage.segmentation import expand_labels
 import cv2
 from PIL import Image
+from matplotlib import image as mimage
 
 from .visualize import get_rgb_distinct
 from matplotlib.colors import rgb2hex
@@ -73,24 +74,26 @@ regioncolors = np.asarray([[  0,   0,   0],
 def processes_regionsegmentation_initial(imagepath, maskpath, annotpath, maskkey="mask_full", regioncolors = regioncolors):
     """ Processes initial color region segmentation with key, save region mask.
     """
-    image = Image.open(imagepath)
-    img = np.asarray(image)
-    
+    #image = Image.open(imagepath)
+    #img = np.asarray(image)
+    img = (mimage.imread(imagepath)[...,:3]*255).astype(int)
+    assert len(img.shape)==3
+
     mask = np.load(maskpath)[maskkey]
-    
+
     uniques = [list(np.unique(img[...,i])) for i in range(img.shape[-1])]
     def maybe_present(color, uniques):
         return np.all([color[i] in uniques[i] for i in range(len(color))])
     color_mask = [maybe_present(color, uniques) for color in regioncolors[1:]]
     maybe_colors = regioncolors[1:][color_mask]
     maybe_colors_ind = np.arange(len(regioncolors[1:]))[color_mask]+1
-    
-    regions = np.zeros(img.shape[:2])
+
+    regions = np.zeros(img.shape[:2], dtype=int)
     for i, color in zip(maybe_colors_ind, maybe_colors):
         regions[np.all(np.logical_and(img<=color+2, img>=color-2), axis=-1)] = i
     if (regions==0).sum()/np.prod(regions.shape)>0.01:
         raise ValueError("Something didn't work right, found more than 1% of annotation empty!")
-    
+
     regions = expand_labels(regions, 10)
     regions = cv2.resize(regions, mask.shape[1:][::-1], interpolation = cv2.INTER_NEAREST)
     
