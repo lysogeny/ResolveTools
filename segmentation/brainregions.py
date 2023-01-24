@@ -67,14 +67,31 @@ regioncolors = np.asarray([[  0,   0,   0],
 #ff000000_nl_ff4aa1ff_nl_ff414eff_nl_ff52ffa5_nl_ff0eff50_nl_ffa0ff6f_nl_ffdaff69_nl_ff23baff_nl_ff43ff50_nl_ffdf7dff_nl_ffffa463_nl_ff27ffe8_nl_ffff4848_nl_ff396fff_nl_ff05e5ff_nl_ff0cffb3_nl_ffff5e34_nl_fff733ff_nl_ffff78b0_nl_ffff1848_nl_ff7b36ff_nl_ffad49ff_nl_ffff3cb5_nl_ff63ff4a_nl_fff7ff22_nl_ff2806ff_nl_ffff1717_nl_ffff52e1_nl_ff9fff2a_nl_ffffb53d_nl_ffffdd3c
 
 
-def processes_regionsegmentation_initial(seg, regkey = regionkey):
-    """ Processes initial color region segmentation with key, return region mask.
-        Could use some slight postprocessing, but probably not important.
+def processes_regionsegmentation_initial(imagepath, maskkey, annotpath, maskkey="mask_full", regioncolors = regioncolors):
+    """ Processes initial color region segmentation with key, save region mask.
     """
-    segregions = np.zeros(list(seg.shape)[:-1])
-    for key in regkey.keys():
-        segregions[np.all(seg[...,::-1]==regkey[key][1], axis=-1)] = key
-    return segregions
+    image = Image.open(imagepath)
+    img = np.asarray(image)
+    
+    mask = np.load(maskpath)[maskkey]
+    
+    uniques = [list(np.unique(img[...,i])) for i in range(img.shape[-1])]
+    def maybe_present(color, uniques):
+        return np.all([color[i] in uniques[i] for i in range(len(color))])
+    color_mask = [maybe_present(color, uniques) for color in regioncolors[1:]]
+    maybe_colors = regioncolors[1:][color_mask]
+    maybe_colors_ind = np.arange(len(regioncolors[1:]))[color_mask]+1
+    
+    regions = np.zeros(img.shape[:2])
+    for i, color in zip(maybe_colors_ind, maybe_colors):
+        regions[np.all(np.logical_and(img<=color+2, img>=color-2), axis=-1)] = i
+    if (regions==0).sum()/np.prod(regions.shape)>0.01:
+        raise ValueError("Something didn't work right, found more than 1% of annotation empty!")
+    
+    regions = expand_labels(regions, 10)
+    regions = cv2.resize(regions, mask.shape[1:][::-1], interpolation = cv2.INTER_NEAREST)
+    
+    np.savez_compressed(annotpath, regions=regions)
 
 ##############################
 ### Brain Regions Of Resolve Counts
