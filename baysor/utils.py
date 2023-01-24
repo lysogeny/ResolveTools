@@ -241,7 +241,8 @@ def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_corr
 
     def split_df(dffull_, boundaries):
         dffull = dffull_.copy()
-        dffull["roi"] = np.searchsorted(boundaries, dffull["x"])
+        dffull["roi"] = np.searchsorted(boundaries, dffull["x"], side="right")
+        if np.any(dffull["roi"]!=np.searchsorted(boundaries, dffull["x"], side="left")): print("MAybe found the error!")
         roi_dfs = []
         for i in range(len(boundaries)):
             df = dffull.loc[dffull["roi"]==i].loc[:,dffull.columns!="roi"].copy()
