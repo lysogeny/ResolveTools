@@ -1,11 +1,14 @@
 import numpy as np
+from skimage.segmentation import expand_labels
+import cv2
+from PIL import Image
+
+from .visualize import get_rgb_distinct
+from matplotlib.colors import rgb2hex
 
 ##############################
 ### Brain Regions Initial
 ##############################
-
-from .visualize import get_rgb_distinct
-from matplotlib.colors import rgb2hex
 
 regionkey = {   1 : "CTX IS", # Cortex, Injection Site
                 2 : "CC IS", # Corpus Callosum, Injection Site
