@@ -112,7 +112,7 @@ def assign_counts_from_Baysor(resultsfolder, genemetafile, roikey, do_for="cell"
 ### Combine transcripts from multiple ROIs
 ##############################
 
-def combine_baysor_transcripts(files, outfile, shift=5000, cellshift=50000):
+def combine_baysor_transcripts(files, outfile, shift=10000, cellshift=100000):
     """ Combines files, adds shift to x and cellshift to cell, saves parameters in ..._combinekey.npz.
     """
     roikeys = [re.search(r'R(\d)_W(\d)A(\d)', filename).group(0) for filename in files]
@@ -211,7 +211,7 @@ def find_cluster_correspondence(target, source, ignore_indices=[], cutoff = 2):
         raise ValueError("Found no clear correspondence of cluster labels! Cluster {} has error {}.".format(test.argmax(), test.max()))
     return repl
 
-def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_correction=True, ignore_indices=[]):
+def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_correction=True, ignore_indices=[], safetyshift=5):
     """ Split Baysor results into ROIs.
         Creates folder structure resultsfolder/rois/...
         Corresponds cluster labels to that from idfile if provided.
@@ -241,10 +241,11 @@ def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_corr
 
     def split_df(dffull_, boundaries):
         dffull = dffull_.copy()
-        dffull["roi"] = np.searchsorted(boundaries, dffull["x"], side="right")
+        dffull["roi"] = np.searchsorted(boundaries, np.round(dffull["x"],1), side="right")
         roi_dfs = []
         for i in range(len(boundaries)):
             df = dffull.loc[dffull["roi"]==i].loc[:,dffull.columns!="roi"].copy()
+            if i<len(boundaries)-1: df = df.loc[df["x"]<boundaries[i]-safetyshift]
             if i>0: df["x"] -= boundaries[i-1]
             roi_dfs.append(df)
         return roi_dfs
