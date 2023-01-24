@@ -7,23 +7,27 @@ import numpy as np
 from .visualize import get_rgb_distinct
 from matplotlib.colors import rgb2hex
 
-regionkey = {   1 : "CTX", #
-                2 : "CC", #
-                3 : "SN", #
-                4 : "LV", #
-                5 : "STR", #
+regionkey = {   1 : "CTX IS", # Cortex, Injection Site
+                2 : "CC IS", # Corpus Callosum, Injection Site
+                3 : "SN IS", # Septal Nuclei, Injection Site
+                4 : "LV IS", # Lateral Ventricle, Injection Site
+                5 : "STR IS", # Striatum, Injection Site
                 
-                6 : "CTX CLH", #
-                7 : "CC CLH", #
-                8 : "SN CLH", #
-                9 : "LV CLH", #
-               11 : "STR CLH", #
+                6 : "CTX CLH", # Cortex, Contralateral Hemisphere
+                7 : "CC CLH", # Corpus Callosum, Contralateral Hemisphere
+                8 : "SN CLH", # Septal Nuclei, Contralateral Hemisphere
+                9 : "LV CLH", # Lateral Ventricle, Contralateral Hemisphere
+               11 : "STR CLH", # Striatum, Contralateral Hemisphere
                
-               12 : "TM IS", #
-               13 : "TM", #
-               14 : "", #
-               15 : "", #
-               16 : "" #
+               12 : "TM IS", # Tumor as Injection Site
+               13 : "TM", # Tumor
+               14 : "TM/LV", # Tumor and Lateral Ventricle
+               
+               15 : "CTX", # Cortex
+               16 : "CC", # Corpus Callosum
+               17 : "SN", # Septal Nuclei
+               18 : "LV", # Lateral Ventricle
+               19 : "STR" # Striatum
              }
 
 #(get_rgb_distinct(30)*255).astype(int)
