@@ -156,13 +156,13 @@ def cluster_crosstab(trans, norm = True, normgenes = True, wnoise = True, compar
     total = cross.sum(axis=1)
     if not norm: return cross
     if normgenes:
-        cross = np.round(cross/np.asarray(cross.sum(axis=1))[:,None]*100,0).astype(int)
+        cross = np.round(cross/np.asarray(cross.sum(axis=1))[:,None]*100,roundn).astype(int)
         cross = cross.astype(str)
         cross[cross=="0"] = ""
         if wtotal: cross["total"] = total
         return cross
     else:
-        cross = np.round(cross/np.asarray(cross.sum(axis=0))[None]*100,0).astype(int)
+        cross = np.round(cross/np.asarray(cross.sum(axis=0))[None]*100,roundn).astype(int)
         cross = cross.astype(str)
         cross[cross=="0"] = ""
         if wtotal: cross["total"] = total
@@ -202,8 +202,11 @@ def find_cluster_correspondence(target, source, ignore_indices=[], cutoff = 2):
     source_f = np.delete(np.asarray(source.replace("","0").astype(int).T), ignore_indices, axis=1)
     dist = distance_matrix(target_f, source_f)
     repl = dist.argmin(axis=1)+1
-    if len(repl) != len(np.unique(repl)) or dist[np.arange(len(repl)),repl-1].max()>cutoff:
-        raise ValueError("Found no clear correspondence of cluster labels!")
+    if len(repl) != len(np.unique(repl)):
+        raise ValueError("Found no clear correspondence of cluster labels! Not every cluster has a clear correspondence.")
+    test = dist[np.arange(len(repl)),repl-1]
+    if test.max()>cutoff:
+        raise ValueError("Found no clear correspondence of cluster labels! Cluster {} has error {}.".format(test.argmax(), test.max()))
     return repl
 
 def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_correction=True, ignore_indices=[]):
