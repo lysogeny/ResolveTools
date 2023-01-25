@@ -219,6 +219,7 @@ def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_corr
     file = np.load(keyfile)
     roikeys = file["roikeys"]
     boundaries = file["boundaries"]
+    cellboundaries = file["cellboundaries"]
     transcripts = pd.read_table(resultfolder+"/segmentation.csv", sep=",")
     if do_correction:
         transcripts.loc[transcripts["gene"]=='H2-K1', "gene"] = 'H2-K1_M'
@@ -239,19 +240,24 @@ def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_corr
         transcripts["cluster"] = repl[transcripts["cluster"]-1]
         cells["cluster"] = repl[cells["cluster"]-1]
 
-    def split_df(dffull_, boundaries):
+    def split_df(dffull_, boundaries, cellboundaries):
         dffull = dffull_.copy()
         dffull["roi"] = np.searchsorted(boundaries, np.round(dffull["x"],1), side="right")
         roi_dfs = []
         for i in range(len(boundaries)):
             df = dffull.loc[dffull["roi"]==i].loc[:,dffull.columns!="roi"].copy()
-            if i<len(boundaries)-1: df = df.loc[df["x"]<boundaries[i]-safetyshift]
-            if i>0: df["x"] -= boundaries[i-1]
+            if i<len(boundaries)-1:
+                df = df.loc[df["x"]<boundaries[i]-safetyshift]
+            if i>0:
+                df["x"] -= boundaries[i-1]
+                if "prior_segmentation" in df.columns:
+                    df.loc[df["prior_segmentation"]!=0, "prior_segmentation"] -= cellboundaries[i-1]
+                
             roi_dfs.append(df)
         return roi_dfs
 
-    roi_transcripts = split_df(transcripts, boundaries)
-    roi_cells = split_df(cells, boundaries)
+    roi_transcripts = split_df(transcripts, boundaries, cellboundaries)
+    roi_cells = split_df(cells, boundaries, cellboundaries)
 
     for i in range(len(roikeys)):
         path = resultfolder+"/rois/"+roikeys[i]
