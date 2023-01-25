@@ -3,16 +3,23 @@ from skimage.segmentation import expand_labels
 import cv2
 from PIL import Image
 from matplotlib import image as mimage
+import re
+import os
+from matplotlib.colors import rgb2hex
 
 from .visualize import get_rgb_distinct
 from ..image.utils import get_single_modality_shape
-from matplotlib.colors import rgb2hex
+from .counts import read_loom
+from ..utils.utils import printwtime
+from ..utils.parameters import CONFOCAL_VOXEL_SIZE
+
 
 ##############################
 ### Brain Regions Initial
 ##############################
 
-regionkey = {   1 : "CTX IS", # Cortex, Injection Site
+regionkey = {   0 : "unknown"
+                1 : "CTX IS", # Cortex, Injection Site
                 2 : "CC IS", # Corpus Callosum, Injection Site
                 3 : "SN IS", # Septal Nuclei, Injection Site
                 4 : "LV IS", # Lateral Ventricle, Injection Site
@@ -113,3 +120,31 @@ def add_regions_to_resolve(pathin, pathout, pathregion, verbose=True):
     rim.full_data["Region"] = regions[rim.full_data["y"], rim.full_data["x"]].astype(int)
     rim.full_data.to_csv(pathout, index=False)
     if verbose: print(np.unique(rim.full_data["Region"], return_counts=True))
+
+##############################
+### Brain Regions to AnnData
+##############################
+
+def add_region_toadata(adatafile, regionfile, roicheck=True):
+    """ Load adata from adatafile, add regions from regionfile, save to same file.
+    """
+    adata = read_loom(adatafile)
+    if not ("x" in adata.obs.columns and "y" in adata.obs.columns):
+        printwtime("Found no position information for {}!".format(adatafile))
+        return None
+    roi = re.search(r'R(\d)_W(\d)A(\d)', os.path.basename(regionfile)).group(0)
+    rois = np.unique(adata.obs["ROI"])
+    if roicheck and not (len(rois)==1 and roi==rois[0]):
+        printwtime("Wrong ROI combination for {}!".format(adatafile))
+        return None
+    
+    regions = np.load(regionfile)["regions"]
+    yIm = (adata.obs["y"]/CONFOCAL_VOXEL_SIZE[1]).astype(int)
+    xIm = (adata.obs["x"]/CONFOCAL_VOXEL_SIZE[2]).astype(int)
+    if yIm.min()<0 or xIm.min()<0 or yIm.max()>regions.shape[0] or xIm.max()>regions.shape[1]:
+        printwtime("Entries out of bounds for {}!".format(adatafile))
+        return None
+    
+    adata.obs["BrainRegion"] = regions[yIm, xIm]
+    adata.obs["BrainRegionName"] = adata.obs["BrainRegion"].apply(lambda x: regionkey[x])
+    adata.write_loom(adatafile)
