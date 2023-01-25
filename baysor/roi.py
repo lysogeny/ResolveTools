@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import anndata
 import warnings
+import matplotlib.pyplot as plt
 
 from .cell import BaysorCell, SegmentationCell
 from .utils import assign_counts_from_Baysor
@@ -646,7 +647,7 @@ class SegmentedResolveROI:
 ### Util function
 ##############################
 
-def apply_combine_baysor_output(resultfolder, segloomfile, genemetafile, boundaryfile, idfile, background=""):
+def apply_combine_baysor_output(resultfolder, segloomfile, genemetafile, boundaryfile, idfile, background="", plotpath="", plotwbackpath=""):
     cluster_combine_list = np.load(idfile, allow_pickle=True)["cluster_combine_list"]
     clusternamedict = np.load(idfile, allow_pickle=True)["clusternamedict"].item()
     
@@ -668,8 +669,8 @@ def apply_combine_baysor_output(resultfolder, segloomfile, genemetafile, boundar
     roidata.make_adata_baysorcells(clusternamedict).write_loom(resultfolder+"/baysor_cells_post.loom")
     
     printwtime("Plot assignments")
-    plot_final_assignment(roidata, file=resultfolder+"/cell_assignment.jpeg")
+    plot_final_assignment(roidata, file= plotpath if plotpath else resultfolder+"/cell_assignment.jpeg")
     plt.close()
     if background:
-        plot_final_assignment(roidata, background=background, file=resultfolder+"/cell_assignment_wbackground.jpeg")
+        plot_final_assignment(roidata, background=background, file= plotwbackpath if plotwbackpath else resultfolder+"/cell_assignment_wbackground.jpeg")
         plt.close()
