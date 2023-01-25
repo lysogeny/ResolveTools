@@ -18,7 +18,7 @@ from ..utils.parameters import CONFOCAL_VOXEL_SIZE
 ### Brain Regions Initial
 ##############################
 
-regionkey = {   0 : "unknown"
+regionkey = {   0 : "unknown",
                 1 : "CTX IS", # Cortex, Injection Site
                 2 : "CC IS", # Corpus Callosum, Injection Site
                 3 : "SN IS", # Septal Nuclei, Injection Site
