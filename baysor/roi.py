@@ -669,4 +669,7 @@ def apply_combine_baysor_output(resultfolder, segloomfile, genemetafile, boundar
     
     printwtime("Plot assignments")
     plot_final_assignment(roidata, file=resultfolder+"/cell_assignment.jpeg")
-    if background: plot_final_assignment(roidata, background=background, file=resultfolder+"/cell_assignment_wbackground.jpeg")
+    plt.close()
+    if background:
+        plot_final_assignment(roidata, background=background, file=resultfolder+"/cell_assignment_wbackground.jpeg")
+        plt.close()
