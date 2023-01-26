@@ -277,7 +277,7 @@ def combine_adatas(resultfolder, genemetafile, loomfile, outfile=""):
         adata = read_loom(file)
         adata.obs.index = list(adata.obs["CellName"])
         return adata
-    adatas = [read_adata(path+roi+"/"+outfile) for roi in rois]
+    adatas = [read_adata(path+roi+"/"+loomfile) for roi in rois]
     def concat_adatas(adatas, genemeta):
         adata = anndata.concat(adatas, join="outer", merge="first")
         adata.var = genemeta.loc[adata.var.index]
