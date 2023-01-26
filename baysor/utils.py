@@ -267,5 +267,22 @@ def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_corr
         roi_cells[i].to_csv(path+"/segmentation_cell_stats.csv", sep=",", index=False)
         counts[roi_cells[i]["cell"]].to_csv(path+"/segmentation_counts.csv", sep="\t")
 
-
+def combine_adatas(resultfolder, genemetafile, loomfile, outfile=""):
+    """ Combine .loom file for all ROIs in resultfolder.
+    """
+    path = resultfolder+"/rois/"
+    rois = os.listdir(path)
+    genemeta = read_genemeta_file(genemetafile)
+    def read_adata(file):
+        adata = read_loom(file)
+        adata.obs.index = list(adata.obs["CellName"])
+        return adata
+    adatas = [read_adata(path+roi+"/"+outfile) for roi in rois]
+    def concat_adatas(adatas, genemeta):
+        adata = anndata.concat(adatas, join="outer", merge="first")
+        adata.var = genemeta.loc[adata.var.index]
+        return adata
+    adata = concat_adatas(adatas, genemeta)
+    if outfile: adata.write_loom(resultfolder+"/"+outfile)
+        return adata
 
