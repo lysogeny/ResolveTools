@@ -284,5 +284,5 @@ def combine_adatas(resultfolder, genemetafile, loomfile, outfile=""):
         return adata
     adata = concat_adatas(adatas, genemeta)
     if outfile: adata.write_loom(resultfolder+"/"+outfile)
-        return adata
+    return adata
 
