@@ -7,6 +7,7 @@ from scipy.spatial import distance_matrix
 
 from ..resolve.resolveimage import ResolveImage, read_genemeta_file
 from ..utils.utils import printwtime
+from ..segmentation.counts import read_loom
 from ..utils.parameters import CONFOCAL_VOXEL_SIZE
 
 ##############################
