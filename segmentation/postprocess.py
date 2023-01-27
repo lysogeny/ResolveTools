@@ -172,19 +172,34 @@ def _stitch_layer_disconnected(masks, i, intersection_cutoff=0.8):
     if len(disconnected)==0: return []
     if i==0 or i==len(masks)-1:
         iof = _intersection_over_first(masks[i], masks[i+1 if i==0 else i-1])[1:,1:]
+        if np.prod(iof.shape)==0: # The closest mask doesn't have any cells
+            return list()
         maxlabels = iof.argmax(axis=1)[disconnected-1]+1
         inters = iof[disconnected-1,maxlabels-1]
     else:
-        iof = _intersection_over_first(masks[i], masks[i+1])[1:,1:]
-        maxlabels_up = iof.argmax(axis=1)[disconnected-1]+1
-        inters_up = iof[disconnected-1,maxlabels_up-1]
-        iof = _intersection_over_first(masks[i], masks[i-1])[1:,1:]
-        maxlabels_down = iof.argmax(axis=1)[disconnected-1]+1
-        inters_down = iof[disconnected-1,maxlabels_down-1]
+        iof_up = _intersection_over_first(masks[i], masks[i+1])[1:,1:]
+        iof_down = _intersection_over_first(masks[i], masks[i-1])[1:,1:]
         
-        udind = np.asarray([inters_up,inters_down]).argmax(axis=0)
-        maxlabels = np.asarray([maxlabels_up,maxlabels_down])[udind,list(range(len(inters_up)))]
-        inters = np.asarray([inters_up,inters_down])[udind,list(range(len(inters_up)))]
+        if np.prod(iof_up.shape)==0 and np.prod(iof_down.shape)==0: # Both sides are empty
+            return list()
+        elif np.prod(iof_up.shape)==0: # Only up is empty
+            maxlabels = iof_down.argmax(axis=1)[disconnected-1]+1
+            inters = iof_down[disconnected-1,maxlabels-1]
+        elif np.prod(iof_down.shape)==0: # Only down is empty
+            maxlabels = iof_up.argmax(axis=1)[disconnected-1]+1
+            inters = iof_up[disconnected-1,maxlabels-1]
+        else: # Both not empty
+            maxlabels_up = iof_up.argmax(axis=1)[disconnected-1]+1
+            inters_up = iof_up[disconnected-1,maxlabels_up-1]
+            maxlabels_down = iof_down.argmax(axis=1)[disconnected-1]+1
+            inters_down = iof_down[disconnected-1,maxlabels_down-1]
+            
+            udind = np.asarray([inters_up,inters_down]).argmax(axis=0)
+            maxlabels = np.asarray([maxlabels_up,maxlabels_down])[udind,list(range(len(inters_up)))]
+            inters = np.asarray([inters_up,inters_down])[udind,list(range(len(inters_up)))]
+    
+    if (inters>intersection_cutoff).sum()==0: # Nothing to replace
+        return list()
     
     replabels = np.arange(0,masks[i].max()+1,1, int)
     replabels[disconnected[inters>intersection_cutoff]] = maxlabels[inters>intersection_cutoff]
