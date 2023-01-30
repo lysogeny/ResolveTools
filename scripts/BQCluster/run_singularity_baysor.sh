@@ -1,0 +1,1 @@
+singularity shell --bind /mnt/sds-hd/sd17l002/p/resolve_glioblastoma/data:/data library://valentinwust/resolve/baysor
