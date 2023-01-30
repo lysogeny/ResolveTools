@@ -1,0 +1,29 @@
+import os
+import numpy as np
+
+dir = "../resolve/04_registration3D/"
+outdirwo = "01_transcripts/"
+outdir = "02_transcripts_wmesmer/"
+files = list(os.listdir(dir))
+filesout = [file.replace(".txt","_baysor_wmesmer.txt") for file in files]
+
+rule targets:
+  input:
+    expand(outdir + "{sample}", sample = filesout)
+
+rule transform:
+  input:
+    ts = dir + "{base}.txt",
+  output:
+    outdirwo + "{base}_baysor.txt",
+    outdir + "{base}_baysor_wmesmer.txt"
+  envmodules:
+    "system/singularity/3.8.2",
+    "mpi/openmpi/4.1.1"
+  threads: 5
+  singularity: "library://valentinwust/resolve/mesmer:latest"
+  shell:
+    """
+      cd /data/baysor
+      python 01.1_transcripts.py {input.ts}
+    """

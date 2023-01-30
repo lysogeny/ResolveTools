@@ -1,0 +1,28 @@
+configfile: "../snakemake/slurmsingularitysingle/config.yaml"
+
+import os
+import numpy as np
+
+dir = "02_mesmer_nuclei/"
+files = list(filter(lambda x: "_nuclei.npz" in x, os.listdir(dir)))
+filesout = [f.replace(".npz","_post.npz") for f in files]
+
+rule targets:
+  input:
+    expand(dir + "{sample}", sample = filesout)
+
+rule postprocess:
+  input:
+    mask = dir + "{base}.npz",
+  output:
+    dir + "{base}_post.npz"
+  envmodules:
+    "system/singularity/3.8.2",
+    "mpi/openmpi/4.1.1"
+  threads: 5
+  singularity: "library://valentinwust/resolve/mesmer"
+  shell:
+    """
+      cd /data/confocal
+      python 02.1_postprocess.py {input.mask}
+    """

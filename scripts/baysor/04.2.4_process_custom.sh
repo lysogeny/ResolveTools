@@ -1,0 +1,1 @@
+python 04.2.3_process_custom.py 2>&1 | tee /data/baysor/04_baysor/results_N21_combined/custom_assign.o

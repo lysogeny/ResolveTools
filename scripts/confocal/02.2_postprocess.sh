@@ -1,0 +1,9 @@
+python 02.1_postprocess.py Confocal_R1_W0A1_DAPI_mesmer_nuclei.npz
+python 02.1_postprocess.py Confocal_R1_W2A1_DAPI_mesmer_nuclei.npz
+python 02.1_postprocess.py Confocal_R1_W5A2_DAPI_mesmer_nuclei.npz
+python 02.1_postprocess.py Confocal_R1_W7A1_DAPI_mesmer_nuclei.npz
+python 02.1_postprocess.py Confocal_R1_W7A2_DAPI_mesmer_nuclei.npz
+python 02.1_postprocess.py Confocal_R2_W0A1_DAPI_mesmer_nuclei.npz
+python 02.1_postprocess.py Confocal_R2_W0A2_DAPI_mesmer_nuclei.npz
+python 02.1_postprocess.py Confocal_R2_W1A1_DAPI_mesmer_nuclei.npz
+python 02.1_postprocess.py Confocal_R2_W6A1_DAPI_mesmer_nuclei.npz

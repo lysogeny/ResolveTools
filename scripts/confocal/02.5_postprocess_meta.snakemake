@@ -1,0 +1,27 @@
+import os
+import numpy as np
+
+dir = "02_mesmer_nuclei/"
+files = list(filter(lambda x: "_nuclei_post.npz" in x, os.listdir(dir)))
+filesout = [f.replace(".npz","_boundary.npz") for f in files]
+
+rule targets:
+  input:
+    expand(dir + "{sample}", sample = filesout)
+
+rule postprocess_meta:
+  input:
+    mask = dir + "{base}.npz",
+  output:
+    dir + "{base}_meta.csv",
+    dir + "{base}_boundary.npz"
+  envmodules:
+    "system/singularity/3.8.2",
+    "mpi/openmpi/4.1.1"
+  threads: 5
+  singularity: "library://valentinwust/resolve/mesmer:latest"
+  shell:
+    """
+      cd /data/confocal
+      python 02.4_postprocess_meta.py {input.mask}
+    """

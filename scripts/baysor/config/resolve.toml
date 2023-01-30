@@ -1,0 +1,8 @@
+[Data]
+min-molecules-per-gene = 30
+min-molecules-per-cell = 3
+min-molecules-per-segment = 1
+scale = 3.0
+
+[Plotting]
+gene-composition-neigborhood = 10
