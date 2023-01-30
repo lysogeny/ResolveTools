@@ -48,6 +48,7 @@ class BaysorCell:
         """
         self.direct_connections_count = self.direct_connections[1][np.argsort(self.direct_connections[1])[::-1]]
         self.direct_connections_index = self.direct_connections[0][np.argsort(self.direct_connections[1])[::-1]]
+        self.direct_connections_index_full = self.direct_connections_index.copy()
         self.try_direct_connection = len(self.direct_connections_index)>0
         self.direct_connection_was_resolved = False
     

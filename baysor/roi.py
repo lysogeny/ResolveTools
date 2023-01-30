@@ -264,6 +264,9 @@ class SegmentedResolveROI:
                 cell.segneighbors_distance_mean = dists.mean(axis=1)
                 cell.segneighbors_distance_min = dists.min(axis=1)
                 cell.segneighbors_distance_max = dists.max(axis=1)
+            mask = [x in list(cell.segneighbors) for x in cell.direct_connections_index]
+            cell.direct_connections_index = np.asarray(cell.direct_connections_index)[mask]
+            cell.direct_connections_count = np.asarray(cell.direct_connections_count)[mask]
         self.cellsbay.apply(lambda x: add_distances(x))
     
     def add_initial(self, boundaryfile = "", trsconnsearchdistance = 10, maxsearchdistseg = 20):
@@ -657,7 +660,7 @@ def apply_combine_baysor_output(resultfolder, segloomfile, genemetafile, boundar
     roidata.add_baysor_initial()
     roidata.add_direct_connectivity()
     roidata.add_baysor_neighbors(10)
-    roidata.add_baysor_segneighbors(boundaryfile, 20)
+    roidata.add_baysor_segneighbors(boundaryfile, 30)
     roidata.resolve_nonunique_direct(0.82)
     roidata.assign_baysor_toseg_direct(10, 0.6)
     roidata.assign_baysor_toseg_fromdist(10, 0.55, 1)
