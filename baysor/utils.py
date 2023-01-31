@@ -9,6 +9,7 @@ from ..resolve.resolveimage import ResolveImage, read_genemeta_file
 from ..utils.utils import printwtime
 from ..segmentation.counts import read_loom
 from ..utils.parameters import CONFOCAL_VOXEL_SIZE
+from ResolveTools.image.utils import read_single_modality_confocal
 
 ##############################
 ### Translate transcripts between Baysor and Resolve
@@ -286,4 +287,64 @@ def combine_adatas(resultfolder, genemetafile, loomfile, outfile=""):
     adata = concat_adatas(adatas, genemeta)
     if outfile: adata.write_loom(resultfolder+"/"+outfile)
     return adata
+
+##############################
+### Add Stain to ROI
+##############################
+
+def add_stain_to_ROI(resultfolder, imagefolder, roi, extend=[1,10,10]):
+    """ Add image stains to single ROI cells.
+    """
+    printwtime("Adding stains to ROI "+roi)
+    
+    segmentation_wnoise = pd.read_table(resultfolder+"/rois/"+roi+"/segmentation.csv", sep=",")
+    segmentation = segmentation_wnoise[~segmentation_wnoise["is_noise"]].copy()
+    segmentation = segmentation[segmentation["cell"]!=0].copy()
+    segmentation["cell"] = roi+"_"+segmentation["cell"].astype(str)
+    segmentation[["z","y","x"]] = (segmentation[["z","y","x"]]/np.asarray(CONFOCAL_VOXEL_SIZE[:3])).astype(int)
+
+    adatabay = read_loom(resultfolder+"/rois/"+roi+"/baysor_cells_post.loom")
+    adatabay.obs.index = adatabay.obs["CellName"]
+    obsbay = adatabay.obs
+    adataseg = read_loom(resultfolder+"/rois/"+roi+"/segmentation_cells.loom")
+    adataseg.obs.index = adataseg.obs["CellName"]
+    obsseg = adataseg.obs
+
+    def sample_extended(segmentation, image, key, extend=[1,10,10]):
+        zmesh, ymesh, xmesh = np.meshgrid(  np.arange(0-extend[0],1+extend[0]),
+                                            np.arange(0-extend[1],1+extend[1]),
+                                            np.arange(0-extend[2],1+extend[2]))
+        zcoord = np.clip(zmesh[None] + np.asarray(segmentation["z"])[:,None,None,None], 0, image.shape[0]-1)
+        ycoord = np.clip(ymesh[None] + np.asarray(segmentation["y"])[:,None,None,None], 0, image.shape[1]-1)
+        xcoord = np.clip(xmesh[None] + np.asarray(segmentation["x"])[:,None,None,None], 0, image.shape[2]-1)
+
+        segmentation[key] = image[zcoord, ycoord, xcoord].mean(axis=-1).mean(axis=-1).mean(axis=-1)
+
+    for mod in ["DAPI","WGA","mCherry","EGFP","IB4","HCM"]:
+        printwtime("  Loading "+mod)
+        impath = imagefolder+"/Confocal_"+roi+"_"+mod+".tif"
+        if os.path.exists(impath):
+            image = read_single_modality_confocal(impath)
+            sample_extended(segmentation, image, "TCFmean_"+mod, extend=[0,0,0])
+            sample_extended(segmentation, image, "TCFmean_"+mod+"_ext", extend=[1,10,10])
+            del image
+    
+    def seg_to_obsbay(key):
+        obsbay[key] = segmentation.groupby("cell").apply(lambda x: x[key].mean())
+    def obsbay_to_obsseg(key):
+        means = obsbay[obsbay["assigned_to"]!=0].groupby("assigned_to").apply(
+                           lambda x: (x["n_transcripts"]*x[key]).sum()/x["n_transcripts"].sum())
+        means.index = roi+"_"+means.index.astype(str)
+        obsseg[key] = means
+    
+    for key in segmentation.columns:
+        if "TCF" in key:
+            #print(key)
+            seg_to_obsbay(key)
+            obsbay_to_obsseg(key)
+    
+    adatabay.write_loom(resultfolder+"/rois/"+roi+"/baysor_cells_post.loom")
+    adataseg.write_loom(resultfolder+"/rois/"+roi+"/segmentation_cells.loom")
+
+
 
