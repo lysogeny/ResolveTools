@@ -114,7 +114,7 @@ def assign_counts_from_Baysor(resultsfolder, genemetafile, roikey, do_for="cell"
 ### Combine transcripts from multiple ROIs
 ##############################
 
-def combine_baysor_transcripts(files, outfile, shift=10000, cellshift=100000):
+def combine_baysor_transcripts(files, outfile, shift=10000, cellshift=100000, dropgenes=[]):
     """ Combines files, adds shift to x and cellshift to cell, saves parameters in ..._combinekey.npz.
     """
     roikeys = [re.search(r'R(\d)_W(\d)A(\d)', filename).group(0) for filename in files]
@@ -128,6 +128,9 @@ def combine_baysor_transcripts(files, outfile, shift=10000, cellshift=100000):
     boundaries = np.arange(1, len(counts)+1)*shift
     cellboundaries = np.arange(1, len(counts)+1)*cellshift
     combined = pd.concat(counts)
+    
+    if len(dropgenes)>0:
+        combined = combined[combined["gene"].apply(lambda x: x not in dropgenes]
     
     combined.to_csv(outfile, index=False)
     np.savez_compressed(outfile.replace(".csv","_combinekey.npz"),
