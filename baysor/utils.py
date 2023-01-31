@@ -292,7 +292,7 @@ def combine_adatas(resultfolder, genemetafile, loomfile, outfile=""):
 ### Add Stain to ROI
 ##############################
 
-def add_stain_to_ROI(resultfolder, imagefolder, roi, extend=[1,10,10]):
+def add_stain_to_ROI(resultfolder, imagefolder, segmentationfolder, roi, extend=[1,10,10]):
     """ Add image stains to single ROI cells.
     """
     printwtime("Adding stains to ROI "+roi)
@@ -338,10 +338,15 @@ def add_stain_to_ROI(resultfolder, imagefolder, roi, extend=[1,10,10]):
         obsseg[key] = means
     
     for key in segmentation.columns:
-        if "TCF" in key:
+        if "TCFmean_" in key:
             #print(key)
             seg_to_obsbay(key)
             obsbay_to_obsseg(key)
+    
+    meta = pd.read_table(segmentationfolder+"/Confocal_"+roi+"_DAPI_mesmer_nuclei_post_meta.csv", sep=",", index_col=0)
+    for key in meta.columns:
+        if "CFmean_" in key:
+            obsseg[key] = meta[key]
     
     adatabay.write_loom(resultfolder+"/rois/"+roi+"/baysor_cells_post.loom")
     adataseg.write_loom(resultfolder+"/rois/"+roi+"/segmentation_cells.loom")
