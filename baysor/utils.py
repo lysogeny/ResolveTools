@@ -130,7 +130,7 @@ def combine_baysor_transcripts(files, outfile, shift=10000, cellshift=100000, dr
     combined = pd.concat(counts)
     
     if len(dropgenes)>0:
-        combined = combined[combined["gene"].apply(lambda x: x not in dropgenes]
+        combined = combined[combined["gene"].apply(lambda x: x not in dropgenes)]
     
     combined.to_csv(outfile, index=False)
     np.savez_compressed(outfile.replace(".csv","_combinekey.npz"),
