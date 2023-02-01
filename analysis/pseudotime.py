@@ -4,6 +4,7 @@ import pandas as pd
 import glmpca.glmpca as glmpca
 import matplotlib.pyplot as plt
 import seaborn as sns
+from skmisc.loess import loess
 
 from ..utils.utils import printwtime
 
