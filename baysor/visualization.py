@@ -208,7 +208,8 @@ mouse_celltypecolors = {
         'unknown':"gray"
 }
 
-def plot_final_assignment_post(resultfolder, keyfile, genemetafile, background=""):
+def plot_final_assignment_post(resultfolder, keyfile, genemetafile, backgroundtemplate=""):
+    printwtime("Split segmentation.csv")
     split_transcripts_assigned(resultfolder, keyfile, genemetafile)
     
     segmentation_wnoise = pd.read_table(resultfolder+"/segmentation_assigned.csv", sep=",")
@@ -220,27 +221,38 @@ def plot_final_assignment_post(resultfolder, keyfile, genemetafile, background="
     path = resultfolder+"/final_assignment_plots/"
     if not os.path.exists(path): os.makedirs(path)
     
+    printwtime("Create final assignment plots")
     rois = os.listdir(resultfolder+"/rois/")
     for roi in rois:
+        printwtime("  Plotting final assignment for ROI "+roi)
         plot_final_assignment_post_singleROI(segmentation_wnoise[segmentation_wnoise["ROI"]==roi].copy(),
                                              obssegPT[obssegPT["ROI"]==roi].copy(),
                                              obsseg[obsseg["ROI"]==roi].copy(),
                                              human_genecolors, human_celltypecolors,
                                              background="", file=path+roi+"_final_assignment_human.jpg", dpi=dpi)
-        if background: plot_final_assignment_post_singleROI(
+        plt.close()
+        if backgroundtemplate:
+            plot_final_assignment_post_singleROI(
                                                  segmentation_wnoise[segmentation_wnoise["ROI"]==roi].copy(),
                                                  obssegPT[obssegPT["ROI"]==roi].copy(),
                                                  obsseg[obsseg["ROI"]==roi].copy(),
                                                  human_genecolors, human_celltypecolors,
-                                                 background=background, file=path+roi+"_final_assignment_human_wbackground.jpg", dpi=dpi)
+                                                 background=backgroundtemplate.format(roi), file=path+roi+"_final_assignment_human_wbackground.jpg", dpi=dpi)
+            plt.close()
         plot_final_assignment_post_singleROI(segmentation_wnoise[segmentation_wnoise["ROI"]==roi].copy(),
                                              obssegPT[obssegPT["ROI"]==roi].copy(),
                                              obsseg[obsseg["ROI"]==roi].copy(),
                                              mouse_genecolors, mouse_celltypecolors,
                                              background="", file=path+roi+"_final_assignment_mouse.jpg", dpi=dpi)
-        if background: plot_final_assignment_post_singleROI(
+        plt.close()
+        if backgroundtemplate:
+            plot_final_assignment_post_singleROI(
                                                  segmentation_wnoise[segmentation_wnoise["ROI"]==roi].copy(),
                                                  obssegPT[obssegPT["ROI"]==roi].copy(),
                                                  obsseg[obsseg["ROI"]==roi].copy(),
                                                  mouse_genecolors, mouse_celltypecolors,
-                                                 background=background, file=path+roi+"_final_assignment_mouse_wbackground.jpg", dpi=dpi)
+                                                 background=backgroundtemplate.format(roi), file=path+roi+"_final_assignment_mouse_wbackground.jpg", dpi=dpi)
+            plt.close()
+
+
+
