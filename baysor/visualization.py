@@ -163,7 +163,8 @@ human_genecolors = {
         'Mouse - Mouse':"black",
         'Mouse - Neuron':"black",
         'Mouse - OD':"black",
-        'Mouse - OPC/OD':"black"
+        'Mouse - OPC/OD':"black",
+        'Mouse - OPC':"black"
 }
 mouse_genecolors = {
         'Human - Activation':"black",
@@ -180,7 +181,8 @@ mouse_genecolors = {
         'Mouse - Mouse':"orange",
         'Mouse - Neuron':"green",
         'Mouse - OD':"purple",
-        'Mouse - OPC/OD':"purple"
+        'Mouse - OPC/OD':"purple",
+        'Mouse - OPC':"purple"
 }
 human_celltypecolors = {
         'Astrocyte':"black",
