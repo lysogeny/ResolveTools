@@ -1,5 +1,6 @@
 tifffile
 scikit-image
+scikit-misc
 pandas
 numpy
 scipy
@@ -11,5 +12,4 @@ loompy
 scanpy
 
 mclahe # pip install --upgrade https://github.com/VincentStimper/mclahe/archive/numpy.zip ## Cite!
-mahotas
 glmpca
