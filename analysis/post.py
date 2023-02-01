@@ -36,7 +36,7 @@ def read_add_combined(path, humancutoff=0.4):
             else: return "naive"
         elif run == 2:
             if sl<4: return "sFRP1"
-            if sl<6: return "naive"
+            elif sl<6: return "naive"
             else: return "reporter"
         else:
             return x
