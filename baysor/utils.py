@@ -9,7 +9,7 @@ from ..resolve.resolveimage import ResolveImage, read_genemeta_file
 from ..utils.utils import printwtime
 from ..segmentation.counts import read_loom
 from ..utils.parameters import CONFOCAL_VOXEL_SIZE
-from ResolveTools.image.utils import read_single_modality_confocal
+from ..image.utils import read_single_modality_confocal
 
 ##############################
 ### Translate transcripts between Baysor and Resolve
