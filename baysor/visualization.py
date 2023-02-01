@@ -100,3 +100,147 @@ def plot_final_assignment(roidata, background="", file="", dpi=900):
     sns.scatterplot(x=obs_seg["x"], y=obs_seg["y"], color="black", s=0.5, ax=ax)
     
     if file: plt.savefig(file, dpi = dpi, bbox_inches ="tight")
+
+def plot_final_assignment_post_singleROI(segmentation_wnoise, obssegPT, obsseg, genecolors, celltypecolors,
+                                         background="", file="", dpi=900):
+    """ Plot single ROI.
+    """
+    segmentation_wnoise["color"] = segmentation_wnoise["celltype"].apply(lambda x: genecolors[x])
+    obssegPT["color"] = obssegPT["BaysorClusterCelltype"].apply(lambda x: celltypecolors[x])
+
+    obsfull = obsseg
+    obs = obssegPT
+    transcripts = segmentation_wnoise[segmentation_wnoise["assigned_to_str"]==segmentation_wnoise["assigned_to_str"]]
+    transcripts_noise = segmentation_wnoise[segmentation_wnoise["assigned_to_str"]!=segmentation_wnoise["assigned_to_str"]]
+
+    obsfull["not_empty"] = False
+    obsfull.loc[obs.index, "not_empty"] = True
+    obsempty = obsfull[~obsfull["not_empty"]]
+
+    xmax, ymax = transcripts["x"].max(), transcripts["y"].max()
+    fig, ax = plt.subplots(1,1,figsize=(xmax/50,ymax/50))
+    ax.set_xlim([0, xmax])
+    ax.set_ylim([0, ymax])
+    
+    if background:
+        image = read_single_modality_confocal(background)[0]
+        size = image.shape*np.asarray(CONFOCAL_VOXEL_SIZE[1:3])
+        plt.imshow(image, origin="lower", cmap="gray", extent=[0, size[1], 0, size[0]], alpha=0.5)
+        del image
+
+    sns.scatterplot(x=transcripts["x"], y=transcripts["y"], color=transcripts["color"], s=1, ax=ax, alpha=0.7)
+    sns.scatterplot(x=transcripts_noise["x"], y=transcripts_noise["y"], color=transcripts_noise["color"], s=0.5, ax=ax, alpha=0.7)
+
+    xt = np.asarray(transcripts["x"])
+    yt = np.asarray(transcripts["y"])
+    xc = np.asarray(transcripts["to_x"])
+    yc = np.asarray(transcripts["to_y"])
+
+    xx = np.vstack([xt,xc])
+    yy = np.vstack([yt,yc])
+    plt.plot(xx, yy, '-', color="dimgray", linewidth=0.15)
+
+    sns.scatterplot(x=obsempty["x"], y=obsempty["y"], color="gray", s=2, ax=ax, zorder=2.5)
+    sns.scatterplot(x=obs["x"], y=obs["y"], color=obs["color"], s=2, ax=ax, zorder=2.5)
+
+    if file: plt.savefig(file, dpi = dpi, bbox_inches ="tight")
+
+human_genecolors = {
+        'Human - Activation':"red",
+        'Human - Differentiation':"purple",
+        'Human - Human':"blue",
+        'Human - Quiescence':"green",
+        'Human - Quiescence/Activation':"orange",
+        'Human/Mouse - Activation':"red",
+        'Mouse - Astrocyte':"black",
+        'Mouse - Endothelial':"black",
+        'Mouse - Macrophages':"black",
+        'Mouse - Macrophages/Microglia':"black",
+        'Mouse - Microglia':"black",
+        'Mouse - Mouse':"black",
+        'Mouse - Neuron':"black",
+        'Mouse - OD':"black",
+        'Mouse - OPC/OD':"black"
+}
+mouse_genecolors = {
+        'Human - Activation':"black",
+        'Human - Differentiation':"black",
+        'Human - Human':"black",
+        'Human - Quiescence':"black",
+        'Human - Quiescence/Activation':"black",
+        'Human/Mouse - Activation':"black",
+        'Mouse - Astrocyte':"blue",
+        'Mouse - Endothelial':"red",
+        'Mouse - Macrophages':"yellow",
+        'Mouse - Macrophages/Microglia':"yellow",
+        'Mouse - Microglia':"yellow",
+        'Mouse - Mouse':"orange",
+        'Mouse - Neuron':"green",
+        'Mouse - OD':"purple",
+        'Mouse - OPC/OD':"purple"
+}
+human_celltypecolors = {
+        'Astrocyte':"black",
+        'Endothelial':"black",
+        'Human A':"red",
+        'Human D':"purple",
+        'Human Q':"green",
+        'Human Q/A':"orange",
+        'Human':"blue",
+        'Macrophages':"black",
+        'Microglia':"black",
+        'Neuron':"black",
+        'OD':"black",
+        'unknown':"gray"
+}
+mouse_celltypecolors = {
+        'Astrocyte':"blue",
+        'Endothelial':"red",
+        'Human A':"black",
+        'Human D':"black",
+        'Human Q':"black",
+        'Human Q/A':"black",
+        'Human':"black",
+        'Macrophages':"yellow",
+        'Microglia':"yellow",
+        'Neuron':"green",
+        'OD':"purple",
+        'unknown':"gray"
+}
+
+def plot_final_assignment_post(resultfolder, keyfile, genemetafile, background=""):
+    split_transcripts_assigned(resultfolder, keyfile, genemetafile)
+    
+    segmentation_wnoise = pd.read_table(resultfolder+"/segmentation_assigned.csv", sep=",")
+    adataseg = read_loom(resultfolder+"/"+os.path.basename(resultfolder)+"_segmentation_cells.loom")
+    obsseg = adataseg.obs
+    adatasegPT = read_loom(resultfolder+"/"+os.path.basename(resultfolder)+"_segmentation_cells_PT.loom")
+    obssegPT = adatasegPT.obs
+    
+    path = resultfolder+"/final_assignment_plots/"
+    if not os.path.exists(path): os.makedirs(path)
+    
+    rois = os.listdir(resultfolder+"/rois/")
+    for roi in rois:
+        plot_final_assignment_post_singleROI(segmentation_wnoise[segmentation_wnoise["ROI"]==roi].copy(),
+                                             obssegPT[obssegPT["ROI"]==roi].copy(),
+                                             obsseg[obsseg["ROI"]==roi].copy(),
+                                             human_genecolors, human_celltypecolors,
+                                             background="", file=path+roi+"_final_assignment_human.jpg", dpi=dpi)
+        if background: plot_final_assignment_post_singleROI(
+                                                 segmentation_wnoise[segmentation_wnoise["ROI"]==roi].copy(),
+                                                 obssegPT[obssegPT["ROI"]==roi].copy(),
+                                                 obsseg[obsseg["ROI"]==roi].copy(),
+                                                 human_genecolors, human_celltypecolors,
+                                                 background=background, file=path+roi+"_final_assignment_human_wbackground.jpg", dpi=dpi)
+        plot_final_assignment_post_singleROI(segmentation_wnoise[segmentation_wnoise["ROI"]==roi].copy(),
+                                             obssegPT[obssegPT["ROI"]==roi].copy(),
+                                             obsseg[obsseg["ROI"]==roi].copy(),
+                                             mouse_genecolors, mouse_celltypecolors,
+                                             background="", file=path+roi+"_final_assignment_mouse.jpg", dpi=dpi)
+        if background: plot_final_assignment_post_singleROI(
+                                                 segmentation_wnoise[segmentation_wnoise["ROI"]==roi].copy(),
+                                                 obssegPT[obssegPT["ROI"]==roi].copy(),
+                                                 obsseg[obsseg["ROI"]==roi].copy(),
+                                                 mouse_genecolors, mouse_celltypecolors,
+                                                 background=background, file=path+roi+"_final_assignment_mouse_wbackground.jpg", dpi=dpi)
