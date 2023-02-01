@@ -308,7 +308,7 @@ def split_segmentation_counts_ROI(segmentation, keyfile):
                                  "prior_segmentation"] -= cellboundaries[i-1]
     segmentation["ROI"] = segmentation["roi"].apply(lambda x: roikeys[x])
 
-def split_transcripts_assigned(resultfolder, keyfile):
+def split_transcripts_assigned(resultfolder, keyfile, genemetafile):
     """ Takes segmentation.csv, adds ROI, assigned segcell etc.
     """
     segmentation_wnoise = pd.read_table(resultfolder+"/segmentation.csv", sep=",")
@@ -339,6 +339,10 @@ def split_transcripts_assigned(resultfolder, keyfile):
     segmentation_wnoise.loc[hassegindex, "to_x"] = list(obsseg.loc[segmentation_wnoise.loc[hassegindex, "assigned_to_str"],"x"])
     segmentation_wnoise["to_y"] = 0
     segmentation_wnoise.loc[hassegindex, "to_y"] = list(obsseg.loc[segmentation_wnoise.loc[hassegindex, "assigned_to_str"],"y"])
+    
+    genemeta = read_genemeta_file(genemetafile)
+    segmentation_wnoise["celltype"] = np.asarray((genemeta["Species"] + " - " + \
+                                              genemeta["Celltype"]).loc[segmentation_wnoise["gene"]])
     
     segmentation_wnoise.to_csv(resultfolder+"/segmentation_assigned.csv", sep=",", index=False)
 
