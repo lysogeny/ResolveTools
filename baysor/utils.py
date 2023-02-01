@@ -291,6 +291,57 @@ def combine_adatas(resultfolder, genemetafile, loomfile, outfile=""):
     if outfile: adata.write_loom(resultfolder+"/"+outfile)
     return adata
 
+def split_segmentation_counts_ROI(segmentation, keyfile):
+    """ Takes combined segmentation.csv and keyfile, 
+        adds ROI and removes shift of prior_segmentation and x.
+    """
+    file = np.load(keyfile)
+    roikeys = file["roikeys"]
+    boundaries = file["boundaries"]
+    cellboundaries = file["cellboundaries"]
+    segmentation["ROI"] = np.searchsorted(boundaries, np.round(segmentation["x"],1), side="right")
+    for i in range(len(boundaries)):
+        if i>0:
+            segmentation.loc[segmentation["ROI"]==i, "x"] -= boundaries[i-1]
+            if "prior_segmentation" in segmentation.columns:
+                segmentation.loc[np.logical_and(segmentation["ROI"]==i, segmentation["prior_segmentation"]!=0),
+                                 "prior_segmentation"] -= cellboundaries[i-1]
+    segmentation["ROI"] = segmentation["roi"].apply(lambda x: roikeys[x])
+
+def split_transcripts_assigned(resultfolder, keyfile):
+    """ Takes segmentation.csv, adds ROI, assigned segcell etc.
+    """
+    segmentation_wnoise = pd.read_table(resultfolder+"/segmentation.csv", sep=",")
+
+    adatabay = read_loom(resultfolder+"/"+os.path.basename(resultfolder)+"_baysor_cells.loom")
+    #adatabay.obs.index = adatabay.obs["CellName"]
+    obsbay = adatabay.obs
+    obsbay.index = obsbay["MaskIndex"]
+
+    adataseg = read_loom(resultfolder+"/"+os.path.basename(resultfolder)+"_segmentation_cells.loom")
+    #adataseg.obs.index = adataseg.obs["CellName"]
+    obsseg = adataseg.obs
+    
+    split_segmentation_counts_ROI(segmentation_wnoise, keyfile)
+    
+    obsbay["assigned_to_str"] = ""
+    mask = obsbay.index[obsbay["assigned_to"]!=0]
+    obsbay.loc[mask, "assigned_to_str"] = obsbay.loc[mask, "ROI"]+"_"+obsbay.loc[mask, "assigned_to"].astype(str)
+
+    segmentation_wnoise["assigned_to_str"] = ""
+    assignedindex = segmentation_wnoise.index[segmentation_wnoise["cell"]!=0]
+    segmentation_wnoise.loc[assignedindex, "assigned_to_str"] = \
+            list(obsbay.loc[segmentation_wnoise.loc[assignedindex, "cell"], "assigned_to_str"])
+
+    hassegindex = segmentation_wnoise.index[segmentation_wnoise["assigned_to_str"]!=""]
+
+    segmentation_wnoise["to_x"] = 0
+    segmentation_wnoise.loc[hassegindex, "to_x"] = list(obsseg.loc[segmentation_wnoise.loc[hassegindex, "assigned_to_str"],"x"])
+    segmentation_wnoise["to_y"] = 0
+    segmentation_wnoise.loc[hassegindex, "to_y"] = list(obsseg.loc[segmentation_wnoise.loc[hassegindex, "assigned_to_str"],"y"])
+    
+    segmentation_wnoise.to_csv(resultfolder+"/segmentation_assigned.csv", sep=",", index=False)
+
 ##############################
 ### Add Stain to ROI
 ##############################
