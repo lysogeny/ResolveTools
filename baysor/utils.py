@@ -306,7 +306,7 @@ def split_segmentation_counts_ROI(segmentation, keyfile):
             if "prior_segmentation" in segmentation.columns:
                 segmentation.loc[np.logical_and(segmentation["ROI"]==i, segmentation["prior_segmentation"]!=0),
                                  "prior_segmentation"] -= cellboundaries[i-1]
-    segmentation["ROI"] = segmentation["roi"].apply(lambda x: roikeys[x])
+    segmentation["ROI"] = segmentation["ROI"].apply(lambda x: roikeys[x])
 
 def split_transcripts_assigned(resultfolder, keyfile, genemetafile):
     """ Takes segmentation.csv, adds ROI, assigned segcell etc.
