@@ -211,7 +211,7 @@ mouse_celltypecolors = {
         'unknown':"gray"
 }
 
-def plot_final_assignment_post(resultfolder, keyfile, genemetafile, backgroundtemplate=""):
+def plot_final_assignment_post(resultfolder, keyfile, genemetafile, backgroundtemplate="", dpi=900):
     printwtime("Split segmentation.csv")
     split_transcripts_assigned(resultfolder, keyfile, genemetafile)
     
