@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os
 
 from ..segmentation.visualize import get_rgb_distinct
 from ..segmentation.counts import read_loom
