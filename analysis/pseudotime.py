@@ -56,22 +56,33 @@ def get_pseudotime(countsshort, adatapcashort, N=2, verbose=False, separation=0.
             return True, pt, i
     return False, np.zeros(pt.shape), -1
 
-def get_meanpseudotime(countsshort, adatapcashort, meanN=10, N=2, verbose=False, separation=0.3, tryFull=False):
+def get_meanpseudotime(countsshort, adatapcashort, meanN=10, N=2, verbose=False, separation=0.3, tryFull=False, maxN=100):
     """ Get PT multiple times, final PT from mean.
     """
     finalptlist = list()
     finalptindex = list()
     c = 0
-    while len(finalptlist)<meanN:
+    while len(finalptlist)<meanN and c<maxN:
         printwtime("Run "+str(c))
         c += 1
-        success, pt, i = get_pseudotime(countsshort, adatapcashort, N=N, verbose=verbose, separation=separation, tryFull=tryFull)
+        
+        try:
+            success, pt, i = get_pseudotime(countsshort, adatapcashort, N=N, verbose=verbose, separation=separation, tryFull=tryFull)
+        except glmpca.GlmpcaError:
+            success = False
+            printwtime("  GlmpcaError!")
+        
         if success:
             finalptlist.append(pt)
             finalptindex.append(i)
             printwtime("  Found PT in component "+str(i))
         else:
             printwtime("  Found no PT")
+    
+    if len(finalptlist)!=meanN:
+        printwtime("  Could not find enough PT!")
+        assert False
+    
     finalptlist = np.asarray(finalptlist)
     finalpt = finalptlist.mean(axis=0)
     finalpt = np.argsort(np.argsort(finalpt))
