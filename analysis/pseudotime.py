@@ -45,16 +45,16 @@ def get_pseudotime(countsshort, adatapcashort, N=2, verbose=False, separation=0.
         def meanstd(x):
             return x.mean(), x.std()
         means = np.asarray([meanstd(pt[adatapcashort.obs["BaysorClusterCelltype"]==ct]) for ct in ctypesordered])
-        return means, pt
+        return means, pt, factorsshort
     for i in ([0] if not tryFull else range(N)):
-        means, pt = get_single_PT(i)
+        means, pt, factorsshort = get_single_PT(i)
         diff = (means[1:,0]-means[:-1,0])/np.sqrt(means[1:,1]**2+means[:-1,1]**2)
         printwtime("    "+str(i)+" "+str(diff))
         if np.all(diff<-separation):
-            return True, 1-pt, i
+            return True, 1-pt, i, factorsshort
         if np.all(diff>separation):
-            return True, pt, i
-    return False, np.zeros(pt.shape), -1
+            return True, pt, i, factorsshort
+    return False, np.zeros(pt.shape), -1, factorsshort
 
 def get_meanpseudotime(countsshort, adatapcashort, meanN=10, N=2, verbose=False, separation=0.3, tryFull=False, maxN=100, **kwargs):
     """ Get PT multiple times, final PT from mean.
@@ -67,7 +67,7 @@ def get_meanpseudotime(countsshort, adatapcashort, meanN=10, N=2, verbose=False,
         c += 1
         
         try:
-            success, pt, i = get_pseudotime(countsshort, adatapcashort, N=N, verbose=verbose, separation=separation, tryFull=tryFull, **kwargs)
+            success, pt, i, _ = get_pseudotime(countsshort, adatapcashort, N=N, verbose=verbose, separation=separation, tryFull=tryFull, **kwargs)
         except glmpca.GlmpcaError:
             success = False
             printwtime("  GlmpcaError!")
