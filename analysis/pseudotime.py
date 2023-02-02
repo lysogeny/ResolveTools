@@ -12,10 +12,10 @@ from ..utils.utils import printwtime
 ### Utils
 ##############################
 
-def get_human_glmpca_data(adata, N=3):
+def get_human_glmpca_data(adata, N=2):
     """ Reduce full adata to human cells for pseudotime estimation.
     """
-    adatapca = adata[np.logical_and(adata.obs["TotalGeneCount"]>N, adata.obs["IS_HUMAN"])]
+    adatapca = adata[np.logical_and(adata.obs["TotalHumanGeneCount"]>N, adata.obs["IS_HUMAN"])]
     counts = np.asarray(adatapca.X.todense()).T[adatapca.var["Species"]!="Mouse"]
 
     df = adatapca.to_df().T
