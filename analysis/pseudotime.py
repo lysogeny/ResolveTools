@@ -33,11 +33,11 @@ def get_human_glmpca_data(adata, N=3):
 ### PT
 ##############################
 
-def get_pseudotime(countsshort, adatapcashort, N=2, verbose=False, separation=0.3, tryFull=False):
+def get_pseudotime(countsshort, adatapcashort, N=2, verbose=False, separation=0.3, tryFull=False, **kwargs):
     """ Get PT using glmpca.
     """
     printwtime("    Run glm-pca")
-    factorsshort = glmpca.glmpca(countsshort, N, fam="nb", verbose=verbose)
+    factorsshort = glmpca.glmpca(countsshort, N, fam="nb", verbose=verbose, **kwargs)
     ctypesordered = ['Human Q', 'Human Q/A', 'Human A', 'Human D']
     def get_single_PT(i):
         pt = np.argsort(np.argsort(factorsshort["factors"][:,i]))
@@ -56,7 +56,7 @@ def get_pseudotime(countsshort, adatapcashort, N=2, verbose=False, separation=0.
             return True, pt, i
     return False, np.zeros(pt.shape), -1
 
-def get_meanpseudotime(countsshort, adatapcashort, meanN=10, N=2, verbose=False, separation=0.3, tryFull=False, maxN=100):
+def get_meanpseudotime(countsshort, adatapcashort, meanN=10, N=2, verbose=False, separation=0.3, tryFull=False, maxN=100, **kwargs):
     """ Get PT multiple times, final PT from mean.
     """
     finalptlist = list()
@@ -67,7 +67,7 @@ def get_meanpseudotime(countsshort, adatapcashort, meanN=10, N=2, verbose=False,
         c += 1
         
         try:
-            success, pt, i = get_pseudotime(countsshort, adatapcashort, N=N, verbose=verbose, separation=separation, tryFull=tryFull)
+            success, pt, i = get_pseudotime(countsshort, adatapcashort, N=N, verbose=verbose, separation=separation, tryFull=tryFull, **kwargs)
         except glmpca.GlmpcaError:
             success = False
             printwtime("  GlmpcaError!")
