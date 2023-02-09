@@ -11,12 +11,13 @@ from ..utils.utils import printwtime
 ##############################
 ### Utils
 ##############################
-
+    
 def get_human_glmpca_data(adata, N=2):
     """ Reduce full adata to human cells for pseudotime estimation.
     """
     adatapca = adata[np.logical_and(adata.obs["HumanGeneCount"]>N, adata.obs["IS_HUMAN"])]
-    counts = np.asarray(adatapca.X.todense()).T[adatapca.var["Species"]!="Mouse"]
+    adatapca = adatapca[:,adatapca.var["Species"]!="Mouse"].copy()
+    counts = np.asarray(adatapca.X.todense() if not type(adata.X)==np.matrix else adata.X).T #[adatapca.var["Species"]!="Mouse"]
 
     df = adatapca.to_df().T
     df.index = adatapca.var["GeneClass"]
@@ -25,9 +26,10 @@ def get_human_glmpca_data(adata, N=2):
     adatapcashort = anndata.AnnData(df, obs=adatapca.obs).copy()
     adatapcashort.var["Gene"] = list(adatapcashort.var.index)
     adatapcashort = adatapcashort[adatapcashort.X.sum(axis=1)>0].copy()
-    countsshort = np.asarray(adatapcashort.X).T[adatapcashort.var["Gene"].apply(lambda x: "Human" in x)]
+    countsshort = np.asarray(adatapcashort.X).T #[adatapcashort.var["Gene"].apply(lambda x: "Human" in x)]
     adatapcashort.X = adatapcashort.X/adatapcashort.X.sum(axis=1)[:,None]
-    return countsshort, adatapcashort
+    adatapca.X = adatapca.X/adatapca.X.sum(axis=1)[:,None]
+    return adatapca, countsshort, adatapcashort
 
 ##############################
 ### PT
@@ -106,6 +108,7 @@ def plot_PT_shares(pt, adatapcashort, hue="BaysorClusterCelltype"):
         yout = smoother.predict(xout).values
         sns.lineplot(x=xout, y=yout, ax=ax, color="black")
         ax.set_title(groups[0] if not name else name)
+        ax.set_ylim([-0.03,1.03])
 
     fig, ax = plt.subplots(3,2,figsize=(20,20))
     plot_single(pt, ["Human - Quiescence"], ax[0,0], name="Human Q")
