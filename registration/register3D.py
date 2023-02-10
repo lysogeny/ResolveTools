@@ -107,7 +107,7 @@ def counts_to_plane(counts, target, source):
     counts["z"] = [point_to_new_plane(x, y, z, target, source) for x, y, z in zip(counts["x"], counts["y"], counts["z"])]
 
 def register_3d_counts(countfile, dapifile, outfile, segmentationfile="", segmentationkey="mask_post",
-                       verbose=True, binsize=1000, plotfile="", plottitle=""):
+                       verbose=True, binsize=1000, plotfile="", plottitle="", shiftstep=0.4):
     """ Register Resolve 3D counts to 3D confocal DAPI image.
     """
     if verbose: printwtime("Loading Image")
@@ -141,7 +141,7 @@ def register_3d_counts(countfile, dapifile, outfile, segmentationfile="", segmen
                 shares.append((segmentation[shifted["z"], shifted["y"], shifted["x"]]!=0).sum()/total)
             return shares
 
-        shifts = np.arange(-4,5,0.4)
+        shifts = np.arange(-4,5,shiftstep)
         shares = get_share(segmentation, counts, shifts)
         del segmentation
         final_shift = shifts[np.argmax(shares)]
