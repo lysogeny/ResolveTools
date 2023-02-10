@@ -142,7 +142,7 @@ def register_3d_counts(countfile, dapifile, outfile, segmentationfile="", segmen
                 shares.append((segmentation[shifted["z"], shifted["y"], shifted["x"]]!=0).sum()/total)
             return shares
 
-        shifts = np.arange(-4,5,shiftstep)
+        shifts = np.arange(-6,7,shiftstep)
         shares = get_share(segmentation, counts, shifts)
         del segmentation
         final_shift = shifts[np.argmax(shares)]
