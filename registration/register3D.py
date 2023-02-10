@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime
 from scipy.optimize import curve_fit
 import re
+import matplotlib.pyplot as plt
 
 from ..resolve.resolveimage import read_Resolve_count
 from ..image.utils import read_single_modality_confocal
