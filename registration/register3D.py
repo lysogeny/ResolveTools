@@ -142,7 +142,7 @@ def register_3d_counts(countfile, dapifile, outfile, segmentationfile="", segmen
                 shares.append((segmentation[shifted["z"], shifted["y"], shifted["x"]]!=0).sum()/total)
             return shares
 
-        shifts = np.arange(-6,7,shiftstep)
+        shifts = np.arange(-8,6,shiftstep)
         shares = get_share(segmentation, counts, shifts)
         del segmentation
         final_shift = shifts[np.argmax(shares)]
@@ -158,7 +158,7 @@ def register_3d_counts(countfile, dapifile, outfile, segmentationfile="", segmen
             plt.savefig(plotfile)
             plt.close()
     else:
-        printwtime("No segmentation was given, to no additional z shift can be approximated")
+        printwtime("No segmentation was given, so no additional z shift can be approximated")
         finalshift = 0
     
     counts = shift_counts(counts, final_shift)
