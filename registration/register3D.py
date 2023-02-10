@@ -2,10 +2,12 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from scipy.optimize import curve_fit
+import re
 
 from ..resolve.resolveimage import read_Resolve_count
 from ..image.utils import read_single_modality_confocal
 from ..resolve.resolveimage import RESOLVE_VOXEL_SIZE
+from ..utils.utils import printwtime
 
 ##############################
 ### Resolve Counts
@@ -104,21 +106,61 @@ def counts_to_plane(counts, target, source):
     """
     counts["z"] = [point_to_new_plane(x, y, z, target, source) for x, y, z in zip(counts["x"], counts["y"], counts["z"])]
 
-def register_3d_counts(countfile, dapifile, outfile, verbose=True, binsize=1000):
+def register_3d_counts(countfile, dapifile, outfile, segmentationfile="", segmentationkey="mask_post",
+                       verbose=True, binsize=1000, plotfile="", plottitle=""):
     """ Register Resolve 3D counts to 3D confocal DAPI image.
     """
-    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Loading Image")
+    if verbose: printwtime("Loading Image")
     dapi = read_single_modality_confocal(dapifile)
+    imageshape = dapi.shape
     
     countplane = fit_plane(*get_tiled_mean_counts_fromfile(countfile, binsize))[0]
     dapiplane = fit_plane(*get_tiled_mean_image(dapi, binsize, mode="mean"))[0]
+    del dapi
     
     counts = read_Resolve_count(countfile)
-    if verbose: print(datetime.now().strftime("%H:%M:%S"),"- Initially",len(counts),"counts")
+    if verbose: printwtime(f"Initially {len(counts)} counts")
     counts["z"] = counts["z"]*RESOLVE_VOXEL_SIZE[0] # Hardcoded resolution from Resolve
     counts_to_plane(counts, dapiplane, countplane)
-    counts["z"] = np.round(counts["z"],0).astype(int)
-    counts = counts.loc[np.logical_and(counts["z"]>=0, counts["z"]<dapi.shape[0])]
-    if verbose: print(datetime.now().strftime("%H:%M:%S"),"-",len(counts),"counts after 3D registration")
+    
+    if segmentationfile:
+        if verbose: printwtime("Loading Segmentation")
+        segmentation = np.load(segmentationfile)[segmentationkey]
+
+        def shift_counts(counts_, shift):
+            counts = counts_.copy()
+            counts["z"] += shift
+            counts["z"] = np.round(counts["z"],0).astype(int)
+            counts = counts[np.logical_and(counts["z"]>0, counts["z"]<imageshape[0])]
+            return counts
+        def get_share(segmentation, counts, shifts=[]):
+            shares = []
+            total = len(counts)
+            for shift in shifts:
+                shifted = shift_counts(counts, shift)
+                shares.append((segmentation[shifted["z"], shifted["y"], shifted["x"]]!=0).sum()/total)
+            return shares
+
+        shifts = np.arange(-4,5,0.4)
+        shares = get_share(segmentation, counts, shifts)
+        del segmentation
+        final_shift = shifts[np.argmax(shares)]
+        if verbose: printwtime(f"Found additional z shift of {np.round(final_shift,1)} um")
+
+        if plotfile:
+            plt.plot(shifts, shares, color="red")
+            plt.xlabel("z Shift [um]")
+            plt.ylabel("Share of Transcripts in Segmentation")
+            plt.vlines(x=final_shift, ymin=min(shares), ymax=max(shares), color="black")
+            plt.ylim([min(shares), None])
+            if plottitle: plt.title(plottitle)
+            plt.savefig(plotfile)
+            plt.close()
+    else:
+        printwtime("No segmentation was given, to no additional z shift can be approximated")
+        finalshift = 0
+    
+    counts = shift_counts(counts, final_shift)
+    if verbose: printwtime(f"{len(counts)} counts after 3D registration")
     
     counts.to_csv(outfile, index=False, header=False, sep="\t")
