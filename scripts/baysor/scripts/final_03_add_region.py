@@ -5,7 +5,9 @@ import os
 from ResolveTools.utils.utils import printwtime
 from ResolveTools.segmentation.brainregions import add_region_toadata
 
-resultfolder = "/data/baysor/04_baysor/results_N21_wmesmer_combined"
+result = sys.argv[1] # results_N21_wmesmer_combined
+
+resultfolder = "/data/baysor/04_baysor/"+result
 #roi = sys.argv[2] #"R2_W0A2"
 
 rois = os.listdir(resultfolder+"/rois/")

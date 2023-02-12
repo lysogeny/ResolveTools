@@ -8,7 +8,9 @@ from ResolveTools.baysor.roi import apply_combine_baysor_output
 from ResolveTools.baysor.visualization import plot_celltypedist
 from ResolveTools.utils.utils import printwtime
 
-resultfolder = "/data/baysor/04_baysor/results_N21_combined"
+result = sys.argv[1] # results_N21_wmesmer_combined
+
+resultfolder = "/data/baysor/04_baysor/"+result
 #roi = sys.argv[2] #"R2_W0A2"
 
 rois = os.listdir(resultfolder+"/rois/")
@@ -17,7 +19,7 @@ plotpath = resultfolder+"/custom_assignment_plots/"
 if not os.path.exists(plotpath): os.makedirs(plotpath)
 
 for roi in rois:
-    idfile = "/data/baysor/04_baysor/reference_N21/cluster_ids.npz"
+    idfile = "/data/baysor/04_baysor/"+result+"/cluster_ids.npz"
     genemetafile = "/data/metadata/gbm_resolve_genes.csv"
     
     resultfolderroi = resultfolder+"/rois/"+roi
@@ -36,6 +38,7 @@ for roi in rois:
                       idfile,
                       outfile=plotpath+roi+"_baysor_celltypes_acustom.png",
                       title = roi)
+
 
 
 
