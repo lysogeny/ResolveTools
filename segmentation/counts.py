@@ -59,9 +59,9 @@ def assign_counts_from_segmentation(countsfile, genemetafile, segmentationfile, 
     
     adata.obs["TotalGeneCount"] = counts.sum(axis=1)
     adata.obs["MouseGeneCount"] = counts[adata.var.loc[adata.var["Species"]=="Mouse","GeneR"]].sum(axis=1)
-    adata.obs["HumanGeneCount"] = counts[adata.var.loc[adata.var["Species"]=="Human","GeneR"]].sum(axis=1)
+    adata.obs["HumanGeneCount"] = counts[adata.var.loc[adata.var["Species"].apply(lambda x: "Human" in x),"GeneR"]].sum(axis=1)
     adata.obs["MouseGeneShare"] = counts[adata.var.loc[adata.var["Species"]=="Mouse","GeneR"]].sum(axis=1)/counts.sum(axis=1)
-    adata.obs["HumanGeneShare"] = counts[adata.var.loc[adata.var["Species"]=="Human","GeneR"]].sum(axis=1)/counts.sum(axis=1)
+    adata.obs["HumanGeneShare"] = counts[adata.var.loc[adata.var["Species"].apply(lambda x: "Human" in x),"GeneR"]].sum(axis=1)/counts.sum(axis=1)
     
     adata.obs = adata.obs.merge(meta, left_index=True, right_index=True)
     

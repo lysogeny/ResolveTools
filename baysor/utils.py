@@ -202,19 +202,19 @@ def save_clusterids(resultfolder, cluster_combine_list, clusternamedict, cross, 
                         humannamecolordict = humannamecolordict,
                         mousenamecolordict = mousenamecolordict)
 
-def find_cluster_correspondence(target, source, ignore_indices=[], cutoff = 2):
+def find_cluster_correspondence(target, source, ignore_indices=[], cutoff = 3):
     """ Find corresponding Baysor clusters, using cluster_crosstab(..., wtotal=False) output.
     """
     target_f = np.delete(np.asarray(target.replace("","0").astype(int).T), ignore_indices, axis=1)
     source_f = np.delete(np.asarray(source.replace("","0").astype(int).T), ignore_indices, axis=1)
     dist = distance_matrix(target_f, source_f)
-    repl = dist.argmin(axis=1)+1
+    repl = dist.argmin(axis=1)
     if len(repl) != len(np.unique(repl)):
         raise ValueError("Found no clear correspondence of cluster labels! Not every cluster has a clear correspondence.")
-    test = dist[np.arange(len(repl)),repl-1]
+    test = dist[np.arange(len(repl)),repl]
     if test.max()>cutoff:
         raise ValueError("Found no clear correspondence of cluster labels! Cluster {} has error {}.".format(test.argmax(), test.max()))
-    return repl
+    return np.argsort(repl)+1
 
 def split_baysor_ROIs(resultfolder, keyfile, idfile="", genemetafile="", do_correction=True, ignore_indices=[], safetyshift=5):
     """ Split Baysor results into ROIs.
@@ -384,7 +384,7 @@ def add_stain_to_ROI(resultfolder, imagefolder, segmentationfolder, roi, extend=
         if os.path.exists(impath):
             image = read_single_modality_confocal(impath)
             sample_extended(segmentation, image, "TCFmean_"+mod, extend=[0,0,0])
-            sample_extended(segmentation, image, "TCFmean_"+mod+"_ext", extend=[1,10,10])
+            sample_extended(segmentation, image, "TCFmean_"+mod+"_ext", extend=extend)
             del image
     
     def seg_to_obsbay(key):

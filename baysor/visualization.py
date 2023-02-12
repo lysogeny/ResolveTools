@@ -73,7 +73,7 @@ def plot_final_assignment(roidata, background="", file="", dpi=900):
     xc_assign = np.asarray(obs_seg.loc[list(assignment),"x"])
     yc_assign = np.asarray(obs_seg.loc[list(assignment),"y"])
     
-    cols = get_rgb_distinct(obs["cluster"].max())
+    cols = get_rgb_distinct(np.max([obs["cluster"].max(), transcripts["cluster"].max(), transcripts_noise["cluster"].max()]))
     xmax, ymax = transcripts["x"].max(), transcripts["y"].max()
     fig, ax = plt.subplots(1,1,figsize=(xmax/50,ymax/50))
     ax.set_xlim([0, xmax])
