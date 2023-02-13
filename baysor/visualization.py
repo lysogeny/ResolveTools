@@ -220,7 +220,7 @@ def plot_final_assignment_post(resultfolder, keyfile, genemetafile, backgroundte
     segmentation_wnoise = pd.read_table(resultfolder+"/segmentation_assigned.csv", sep=",")
     adataseg = read_loom(resultfolder+"/"+os.path.basename(resultfolder)+"_segmentation_cells.loom")
     obsseg = adataseg.obs
-    adatasegPT = read_loom(resultfolder+"/"+os.path.basename(resultfolder)+"_segmentation_cells_PT.loom")
+    adatasegPT = read_loom(resultfolder+"/"+os.path.basename(resultfolder)+"_segmentation_cells_QC.loom")
     obssegPT = adatasegPT.obs
     
     path = resultfolder+"/final_assignment_plots/"
