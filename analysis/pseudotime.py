@@ -17,7 +17,7 @@ def get_human_glmpca_data(adata, N=2):
     """
     adatapca = adata[np.logical_and(adata.obs["HumanGeneCount"]>N, adata.obs["IS_HUMAN"])]
     adatapca = adatapca[:,adatapca.var["Species"]!="Mouse"].copy()
-    counts = np.asarray(adatapca.X.todense() if not type(adata.X)==np.matrix else adata.X).T #[adatapca.var["Species"]!="Mouse"]
+    counts = np.asarray(adatapca.X.todense() if not (type(adata.X)==np.matrix or type(adata.X)==np.ndarray) else adata.X).T #[adatapca.var["Species"]!="Mouse"]
 
     df = adatapca.to_df().T
     df.index = adatapca.var["GeneClass"]
