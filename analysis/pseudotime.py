@@ -103,7 +103,7 @@ def plot_PT_shares(pt, adatapcashort, hue="BaysorClusterCelltype"):
         jitter = np.random.normal(0,0.005,len(pt))
         sns.scatterplot(x=pt, y=jitter+yvals, ax=ax, s=1,
                         hue=adatapcashort.obs[hue])
-        smoother = loess(pt, yvals, span=0.4, degree=2)
+        smoother = loess(pt, yvals, span=0.05, degree=1)
         xout = np.arange(0,1.001,0.001)
         yout = smoother.predict(xout).values
         sns.lineplot(x=xout, y=yout, ax=ax, color="black")

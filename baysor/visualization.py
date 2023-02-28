@@ -213,7 +213,7 @@ mouse_celltypecolors = {
         'unknown':"gray"
 }
 
-def plot_final_assignment_post(resultfolder, keyfile, genemetafile, backgroundtemplate="", dpi=900):
+def plot_final_assignment_post(resultfolder, keyfile, genemetafile, backgroundtemplate="", humanbackgroundtemplate="", dpi=900):
     printwtime("Split segmentation.csv")
     split_transcripts_assigned(resultfolder, keyfile, genemetafile)
     
@@ -244,6 +244,17 @@ def plot_final_assignment_post(resultfolder, keyfile, genemetafile, backgroundte
                                                  human_genecolors, human_celltypecolors,
                                                  background=backgroundtemplate.format(roi), file=path+roi+"_final_assignment_human_wbackground.jpg", dpi=dpi)
             plt.close()
+        
+        if humanbackgroundtemplate:
+            mode = "mCherry" if os.path.isfile(backgroundtemplate.format(roi,"mCherry")) else "HCM"
+            plot_final_assignment_post_singleROI(
+                                                 segmentation_wnoise[segmentation_wnoise["ROI"]==roi].copy(),
+                                                 obssegPT[obssegPT["ROI"]==roi].copy(),
+                                                 obsseg[obsseg["ROI"]==roi].copy(),
+                                                 human_genecolors, human_celltypecolors,
+                                                 background=humanbackgroundtemplate.format(roi, mode), file=path+roi+"_final_assignment_human_whumanbackground.jpg", dpi=dpi)
+            plt.close()
+        
         plot_final_assignment_post_singleROI(segmentation_wnoise[segmentation_wnoise["ROI"]==roi].copy(),
                                              obssegPT[obssegPT["ROI"]==roi].copy(),
                                              obsseg[obsseg["ROI"]==roi].copy(),

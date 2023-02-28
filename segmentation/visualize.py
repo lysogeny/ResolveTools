@@ -47,7 +47,7 @@ def add_mask_outline_confidence_to_grayscale(gray, mask, mask_confident, ioucuto
 def get_rgb_distinct(N):
     """ Return N distinct colors.
     """
-    hues = np.linspace(0, 1, N)[np.random.permutation(N)]
+    hues = np.linspace(0, 1, N+1)[np.random.permutation(N)]
     cols = np.asarray([colorsys.hsv_to_rgb(h,np.random.uniform(0.5,1),1) for h in hues])
     return cols
 
