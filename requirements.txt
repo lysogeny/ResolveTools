@@ -4,7 +4,7 @@ scikit-misc
 pandas
 numpy
 scipy
-cv2
+opencv-python
 openpyxl
 readlif
 numba
