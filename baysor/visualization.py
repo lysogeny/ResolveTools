@@ -213,7 +213,7 @@ mouse_celltypecolors = {
         'unknown':"gray"
 }
 
-def plot_final_assignment_post(resultfolder, keyfile, genemetafile, backgroundtemplate="", humanbackgroundtemplate="", dpi=900, onlyhumanbackground=False):
+def plot_final_assignment_post(resultfolder, keyfile, genemetafile, backgroundtemplate="", humanbackgroundtemplate="", dpi=900, onlyhumanbackground=False, excluderois=[]):
     printwtime("Split segmentation.csv")
     split_transcripts_assigned(resultfolder, keyfile, genemetafile)
     
@@ -227,7 +227,7 @@ def plot_final_assignment_post(resultfolder, keyfile, genemetafile, backgroundte
     if not os.path.exists(path): os.makedirs(path)
     
     printwtime("Create final assignment plots")
-    rois = os.listdir(resultfolder+"/rois/")
+    rois = list(filter(lambda x: x not in excluderois, os.listdir(resultfolder+"/rois/")))
     for roi in rois:
         printwtime("  Plotting final assignment for ROI "+roi)
         if not onlyhumanbackground:
