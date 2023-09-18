@@ -1,4 +1,4 @@
-name: Build Python Package
+name: Build
 on: [push]
 
 jobs:
@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.11"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up python
@@ -18,8 +18,4 @@ jobs:
         run: pip install --upgrade build
       - name: Build package
         run: python3 -m build
-      - name: Store built package
-        uses: actions/upload-artifact@v3
-        with: 
-          name: resolve_tools ${{ matrix.python-version }}
-          path: dist/
+      # TODO: add step to publish to pypi
