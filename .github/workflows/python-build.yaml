@@ -23,4 +23,3 @@ jobs:
         with: 
           name: python-package-distributions
           path: dist/
-        run: python3 -m build
