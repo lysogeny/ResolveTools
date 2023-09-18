@@ -27,7 +27,7 @@ dependencies = [
 ]
 version = "0.0.1"
 authors = [
-  { name="Valentin Wüst" },
+  { name="Valentin Wüst", email="valentin.wuest@bioquant.uni-heidelberg.de" },
 ]
 description = "Analyse Resolve Molecular Cartography data"
 readme = "README.md"
