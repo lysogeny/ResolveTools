@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from ResolveTools.utils.utils import printwtime
-from ResolveTools.analysis.post import read_add_combined
-from ResolveTools.segmentation.counts import read_loom
-from ResolveTools.analysis.pseudotime import get_human_glmpca_data, get_meanpseudotime, plot_PT_shares
+from resolve_tools.utils.utils import printwtime
+from resolve_tools.analysis.post import read_add_combined
+from resolve_tools.segmentation.counts import read_loom
+from resolve_tools.analysis.pseudotime import get_human_glmpca_data, get_meanpseudotime, plot_PT_shares
 
 result = sys.argv[1] # results_N21_wmesmer_combined
 resultfolder = "/data/baysor/04_baysor/"+result

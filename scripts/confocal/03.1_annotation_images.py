@@ -6,8 +6,8 @@ import re
 
 import sys
 sys.path.insert(0,'/data/')
-from ResolveTools.image.utils import resize_shrink, read_single_modality_confocal
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.image.utils import resize_shrink, read_single_modality_confocal
+from resolve_tools.utils.utils import printwtime
 
 factor = 2
 path = "/data/confocal/01_image/"

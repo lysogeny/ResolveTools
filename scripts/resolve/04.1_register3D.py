@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0,'/data/')
-from ResolveTools.registration.register3D import register_3d_counts
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.registration.register3D import register_3d_counts
+from resolve_tools.utils.utils import printwtime
 
 import re
 import os

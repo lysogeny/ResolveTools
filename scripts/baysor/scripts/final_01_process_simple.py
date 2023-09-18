@@ -4,9 +4,9 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-from ResolveTools.baysor.utils import split_baysor_ROIs, assign_counts_from_Baysor
-from ResolveTools.baysor.visualization import plot_celltypedist
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.baysor.utils import split_baysor_ROIs, assign_counts_from_Baysor
+from resolve_tools.baysor.visualization import plot_celltypedist
+from resolve_tools.utils.utils import printwtime
 
 ## Split Results
 

@@ -4,8 +4,8 @@ import re
 
 import sys
 sys.path.insert(0,'/data/')
-from ResolveTools.segmentation.brainregions import processes_regionsegmentation_initial
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.segmentation.brainregions import processes_regionsegmentation_initial
+from resolve_tools.utils.utils import printwtime
 
 path = "/data/confocal/03_annotation/"
 process = list(filter(lambda x: "_annotation.png" in x, os.listdir("/data/confocal/03_annotation")))

@@ -3,8 +3,8 @@ from tqdm import tqdm
 
 import sys
 sys.path.insert(0,'/data/')
-from ResolveTools.image.utils import save_tiff, save_tiff_from_float, claher, read_single_modality_confocal
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.image.utils import save_tiff, save_tiff_from_float, claher, read_single_modality_confocal
+from resolve_tools.utils.utils import printwtime
 
 path = "/data/confocal/01_image/"
 images = os.listdir(path)

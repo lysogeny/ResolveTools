@@ -3,8 +3,8 @@ sys.path.insert(0,'/data/')
 import os
 import matplotlib.pyplot as plt
 
-from ResolveTools.baysor.visualization import plot_final_assignment_post
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.baysor.visualization import plot_final_assignment_post
+from resolve_tools.utils.utils import printwtime
 
 ## Split Results
 

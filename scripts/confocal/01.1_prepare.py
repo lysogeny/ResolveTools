@@ -7,8 +7,8 @@ import tifffile
 import os
 import sys
 sys.path.insert(0,'/data/')
-from ResolveTools.image.utils import save_tiff
-from ResolveTools.image.lif import LifFile, read_lif_image
+from resolve_tools.image.utils import save_tiff
+from resolve_tools.image.lif import LifFile, read_lif_image
 
 from tqdm import tqdm
 

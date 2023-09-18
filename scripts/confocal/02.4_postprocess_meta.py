@@ -9,9 +9,9 @@ import os
 import sys
 sys.path.insert(0,'/data/')
 
-from ResolveTools.segmentation.utils import segmentation_to_meta_df, save_sampled_boundary
+from resolve_tools.segmentation.utils import segmentation_to_meta_df, save_sampled_boundary
 from skimage.segmentation import find_boundaries
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.utils.utils import printwtime
 import re
 
 filename = sys.argv[1]

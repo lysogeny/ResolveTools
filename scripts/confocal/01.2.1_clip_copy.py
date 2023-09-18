@@ -9,12 +9,12 @@ import os
 import sys
 sys.path.insert(0,'/data/')
 
-from ResolveTools.image.utils import save_tiff, claher, read_single_modality_confocal
-from ResolveTools.image.lif import LifFile, read_lif_image
-from ResolveTools.registration.registerSIFT import find_homography, warp_image, transform_coordinate, scale_homography,\
+from resolve_tools.image.utils import save_tiff, claher, read_single_modality_confocal
+from resolve_tools.image.lif import LifFile, read_lif_image
+from resolve_tools.registration.registerSIFT import find_homography, warp_image, transform_coordinate, scale_homography,\
                                                     get_transformed_corners
-from ResolveTools.segmentation.brainregions import processes_regionsegmentation_initial
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.segmentation.brainregions import processes_regionsegmentation_initial
+from resolve_tools.utils.utils import printwtime
 
 def find_corners():
     printwtime("Loading Images")

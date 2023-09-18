@@ -9,12 +9,12 @@ import os
 import sys
 sys.path.insert(0,'/data/')
 
-from ResolveTools.image.utils import save_tiff, claher, resize_shrink
-from ResolveTools.registration.registerSIFT import find_homography, find_homographies, warp_image,\
+from resolve_tools.image.utils import save_tiff, claher, resize_shrink
+from resolve_tools.registration.registerSIFT import find_homography, find_homographies, warp_image,\
                                                     transform_coordinate, scale_homography, get_transformed_corners,\
                                                     homography_shift_target
-from ResolveTools.registration.registerTiles import tile_2Dimage
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.registration.registerTiles import tile_2Dimage
+from resolve_tools.utils.utils import printwtime
 
 name = sys.argv[1]
 

@@ -9,8 +9,8 @@ import os
 import sys
 sys.path.insert(0,'/data/')
 
-from ResolveTools.segmentation.postprocess import postprocess_raw_mesmer_masks
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.segmentation.postprocess import postprocess_raw_mesmer_masks
+from resolve_tools.utils.utils import printwtime
 
 printwtime("Loading Mask")
 file = np.load("/data/confocal/"+sys.argv[1])

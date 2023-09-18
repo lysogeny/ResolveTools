@@ -1,8 +1,8 @@
 import sys
 sys.path.insert(0,'/data/')
 
-from ResolveTools.baysor.utils import counts_resolve_to_baysor
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.baysor.utils import counts_resolve_to_baysor
+from resolve_tools.utils.utils import printwtime
 import re
 import os
 

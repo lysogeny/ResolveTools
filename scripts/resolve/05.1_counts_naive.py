@@ -2,8 +2,8 @@ import os
 import re
 import sys
 sys.path.insert(0,'/data/')
-from ResolveTools.segmentation.counts import assign_counts_from_segmentation
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.segmentation.counts import assign_counts_from_segmentation
+from resolve_tools.utils.utils import printwtime
 
 path = "/data/resolve/04_registration3D/"
 

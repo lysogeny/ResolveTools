@@ -1,7 +1,7 @@
 import os
 import sys
 sys.path.insert(0,'/data/')
-from ResolveTools.baysor.utils import combine_baysor_transcripts
+from resolve_tools.baysor.utils import combine_baysor_transcripts
 
 
 

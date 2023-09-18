@@ -6,8 +6,8 @@ import numpy as np
 
 import sys
 sys.path.insert(0,'/data/')
-from ResolveTools.segmentation.brainregions import regionkey, regioncolors
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.segmentation.brainregions import regionkey, regioncolors
+from resolve_tools.utils.utils import printwtime
 
 path = "/data/confocal/03_annotation/"
 files = list(filter(lambda x: "_annotated_regions.npz" in x, os.listdir("/data/confocal/03_annotation")))

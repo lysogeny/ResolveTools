@@ -4,9 +4,9 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-from ResolveTools.baysor.roi import apply_combine_baysor_output
-from ResolveTools.baysor.visualization import plot_celltypedist
-from ResolveTools.utils.utils import printwtime
+from resolve_tools.baysor.roi import apply_combine_baysor_output
+from resolve_tools.baysor.visualization import plot_celltypedist
+from resolve_tools.utils.utils import printwtime
 
 result = sys.argv[1] # results_N21_wmesmer_combined
 

@@ -2,8 +2,8 @@ import sys
 sys.path.insert(0,'/data/')
 import os
 
-from ResolveTools.utils.utils import printwtime
-from ResolveTools.segmentation.brainregions import add_region_toadata
+from resolve_tools.utils.utils import printwtime
+from resolve_tools.segmentation.brainregions import add_region_toadata
 
 result = sys.argv[1] # results_N21_wmesmer_combined
 
